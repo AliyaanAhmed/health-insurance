@@ -1,0 +1,8 @@
+{
+  "status": "unavailable",
+  "command": "python audit_project.py . --mode strict",
+  "exitCode": 1,
+  "reason": "The Windows Python alias reported that Python is not installed. The skill's Python static audit did not run.",
+  "runtimeEvidence": [".qa/results.json", "design-qa.md"],
+  "note": "This is an availability record, not a passing result from the skill auditor. TypeScript/build, source lint, formatting, browser flows and axe checks are run separately."
+}

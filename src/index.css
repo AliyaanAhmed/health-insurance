@@ -1,0 +1,175 @@
+@import '@fontsource-variable/inter/index.css';
+@import '@fontsource-variable/manrope/index.css';
+@import '@fontsource-variable/noto-sans-arabic/index.css';
+
+:root {
+  --health-primary: #08675f;
+  --health-primary-hover: #07564f;
+  --health-primary-soft: #e6f4ee;
+  --health-ink: #103b36;
+  --health-body: #244a43;
+  --health-muted: #526b65;
+  --health-canvas: #f6faf8;
+  --health-surface: #ffffff;
+  --health-border: #d7e5df;
+  --health-control-border: #76958b;
+  --health-gold: #e7c88c;
+  --health-success: #16704a;
+  --health-warning: #8a5b12;
+  --health-error: #b42318;
+  --health-error-surface: #fff1ef;
+  --health-focus: #08675f;
+  --health-shadow: 0 12px 36px rgb(16 59 54 / 6%);
+  --font-heading: 'Manrope Variable', 'Noto Sans Arabic Variable', sans-serif;
+  --font-body: 'Inter Variable', 'Noto Sans Arabic Variable', sans-serif;
+  --radius-control: 12px;
+  --radius-card: 20px;
+  --app-header-height: 76px;
+  --scrollbar-thumb: #9ab8ac;
+  --scrollbar-hover: #648e7f;
+  --scrollbar-active: #08675f;
+  --scrollbar-track: #edf4f0;
+  font-family: var(--font-body);
+  color: var(--health-body);
+  background: var(--health-canvas);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  scrollbar-gutter: stable;
+}
+* {
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border: 2px solid var(--scrollbar-track);
+  border-radius: 8px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+}
+*::-webkit-scrollbar-thumb:active {
+  background: var(--scrollbar-active);
+}
+body {
+  margin: 0;
+  min-width: 320px;
+}
+body:has(dialog[open]) {
+  overflow: hidden;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button,
+a,
+summary,
+label:has(input[type='radio']) {
+  -webkit-tap-highlight-color: transparent;
+}
+button,
+a,
+summary {
+  touch-action: manipulation;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button {
+  color: inherit;
+}
+input {
+  min-width: 0;
+  color: var(--health-ink);
+}
+input::placeholder {
+  color: #62786e;
+  opacity: 1;
+}
+input[type='radio'] {
+  accent-color: var(--health-primary);
+}
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  color: var(--health-ink);
+  margin: 0;
+  font-weight: 750;
+}
+p {
+  margin: 0;
+}
+img {
+  display: block;
+  max-width: 100%;
+}
+svg {
+  flex-shrink: 0;
+}
+::selection {
+  background: #c9e7da;
+  color: var(--health-ink);
+}
+:focus-visible {
+  outline: 3px solid var(--health-focus);
+  outline-offset: 4px;
+}
+h1:focus {
+  outline: none;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+[dir='rtl'] {
+  --font-heading: 'Noto Sans Arabic Variable', 'Manrope Variable', sans-serif;
+  --font-body: 'Noto Sans Arabic Variable', 'Inter Variable', sans-serif;
+}
+[dir='rtl'] .directional {
+  transform: rotate(180deg);
+}
+@media (forced-colors: active) {
+  * {
+    scrollbar-color: auto;
+  }
+  :focus-visible {
+    outline-color: Highlight;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
