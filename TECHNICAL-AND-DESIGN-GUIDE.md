@@ -290,11 +290,13 @@ Motion is restrained: hover feedback, incoming question fade and initial hero ap
 
 These are implementation features, not a claim of formal accessibility certification.
 
-## 17. Demo verification and data boundaries
+## 17. Creation and data boundaries
 
-Demo OTP is 123456. No SMS is sent. Raw OTP is not stored in the prepared inquiry. The success screen states that this is a local preview and no inquiry was submitted. My Inquiries displays session-only prepared previews rather than fabricated policies, premiums or insurer responses.
+OTP is no longer part of the create flow. Documents precedes final review. Create Inquiry validates the draft, shows an 850ms health-themed loader, creates a session record with attached File objects and opens its detail view directly. No SMS, Dataverse call or backend upload occurs. There is a duplicate-click guard and pending creation is cancelled when leaving the form. Records and files reset on refresh.
 
-Dataverse tables, production OTP, authentication, consent wording, authorization, durable draft storage and insurer integration remain future work.
+Accepted document formats are PDF, JPG, PNG and WEBP, with prototype limits of 10 MB per file and 10 files. Upload is optional until business requirements define mandatory documents. Preview and download use local Blob URLs with cleanup on close.
+
+Dataverse, production authentication, durable storage, consent wording, authorization and insurer integration remain future work.
 
 ## 18. Power Pages and repository delivery
 
@@ -310,3 +312,31 @@ pac pages upload-code-site --rootPath .
 Microsoft Power Platform CLI must already be installed and authenticated. A GitHub push does not deploy the Power Pages website.
 
 Repository exclusions include node_modules, dist, local captures, diagnostic downloads, test results, editor files and credentials. Reproduce build output from the source and lockfile rather than committing generated dependency/build folders.
+
+## 19. Inquiry table, detail page and loader extension
+
+The inquiry list now includes six fictional, explicitly labelled sample inquiries plus any user-prepared session records. src/inquiryData.ts owns fixtures and display helpers. The table in src/InquiryList.tsx supports combined search, status/coverage filtering, newest/oldest sorting, counts, accessible row links, and an empty-filter recovery action.
+
+src/InquiryView.tsx owns the new /inquiries/{id} hash route with Overview, People in cover and Activity tabs. It reuses Summary DataRows/coverRows/applicantRows, Avatar, health field catalogs, formatting helpers and the existing language provider. The record view provides a copyable reference, status, cover/applicant detail groups, person selection, contextual summary, contact links and a clearly illustrative sample timeline. User-created records show only their local preview-preparation event. Unavailable IDs have a dedicated recovery view. No editing or Dataverse calls are introduced.
+
+src/PageLoader.tsx and src/InquiryRecords.css provide a reusable centered loader with an animated Phosphor heartbeat, orbit, halo, dots and indeterminate rail. The current frontend demonstration uses a 650ms cancellable opening transition; future data fetching can mount the same loader while actual work is pending. Reduced motion is respected. The incoming record focuses its heading.
+
+New screen sizes: list heading 34px desktop/27px mobile; record identity 24-34px; section headings 17px; read-only values 13px/12px mobile; table primary names 13px, table helper text 10-11px; loader title 23px/21px mobile. Desktop details use a flexible main column and a 310px aside, reduced to 270px on tablet and one column on mobile.
+
+Arabic additions live in src/inquiryTranslations.ts and merge into the canonical dictionary. No additional packages were installed. Session draft clearing is unchanged: refresh clears entered/user-prepared records but recreates the explicit demo fixtures.
+
+## 20. Inquiry reference layout revision
+
+Inquiry names now follow "Inquiry for Health Insurance - applicant email" in the table and detail header. A split header places identity/status opposite src/PremiumBreakdown.tsx. Pricing is optional InquiryPremium data (base, additional and taxPercent) and is displayed through an accessible collapsible summary. Fixture pricing is illustrative; the sample tax rate is not a statement of applicable health-insurance tax treatment. Real session previews remain unpriced until a rating integration supplies a premium. No backend pricing logic was added.
+
+Activity was removed. src/FamilyTree.tsx replaces the mutually exclusive person selector with an applicant/sponsor root and visible relationship branches. Each person shows name, relationship, DOB, age, gender and inclusion. Relationship groups can collapse.
+
+src/InquiryDocuments.tsx is the final full-width section. The optional InquiryDocument model currently supplies sample PDF filenames/categories and a sample flag. Preview buttons open clearly labelled illustrative HTML document content; they do not imply actual files have been uploaded. A newly created inquiry has no attachments and displays the empty state. Upload in the create wizard is reserved for later work.
+
+The new view uses Applicant information, not driver/vehicle fields. The existing right summary alignment is retained. No new dependencies or runtime services were introduced.
+
+## 21. Document-upload and direct-create extension
+
+The active create path no longer mounts Verification. Draft adds documents and documentsConfirmed; Stage adds documents. DocumentUpload.tsx supplies health reference tiles, accessible file selection, drag/drop, count/type/size/duplicate checks, preview and removal. FilePreview.tsx owns temporary image/PDF Blob URLs and download links. InquiryDocument optionally holds a File; record creation copies draft attachments to the new record. InquiryDocuments now previews real local files when present, retaining explicit illustrative previews for sample metadata. The final review reuses it with an Edit action. No packages were added. Original PNG references are bundled as supplied.
+
+The create loader and record-opening loader are coordinated to avoid a repeated delay after creation. The new record opens directly in its Details tab, with its own files available for this session. Older browser tests describing OTP and pre-document step ordering require updates before reuse.

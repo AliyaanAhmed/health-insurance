@@ -51,11 +51,11 @@ There is no data table requiring row-selection ownership. Prepared inquiries are
 - Summary Edit preserves all other input. Person links open the correct member editor.
 - Mobile summary is a disclosure above the editor. Actions stay accessible with page-bottom space and safe-area padding.
 
-## Demo verification and completion
+## Creation and documents
 
-- Review opens a clearly labelled demo six-digit OTP dialog. Code `123456`; no SMS and no network writes. Leading zeroes remain strings, paste/autoadvance/backspace/arrows work, resend has a countdown.
-- Wrong/incomplete codes show inline errors. The brief pending state prevents duplicate finish actions. Raw OTP is not copied into the prepared inquiry.
-- Completion says the inquiry preview is ready and explicitly says nothing was submitted. My inquiries shows session-only prepared records, actual entered data and a read-only detail view; no fabricated plans/premiums.
+- Documents precedes final review for all coverage paths. Optional local files can be browsed/dropped, previewed, removed and edited from final review. The user sees file type, count and size limits and rejection reasons.
+- Create Inquiry validates all preceding stages and the document-step acknowledgement. It shows the themed loader, then creates one session record and navigates directly to /inquiries/{id}. OTP is removed. Duplicate creation is guarded; leaving during the pending transition cancels it.
+- Files are stored only as browser-memory File objects attached to the draft/record. Real image/PDF previews and downloads use temporary Blob URLs, revoked on preview unmount. Refresh clears records/files; coverage changes clear draft files. No backend upload, Dataverse write or persistence is claimed.
 
 ## Locale, accessibility and resilience
 
@@ -75,3 +75,24 @@ There is no data table requiring row-selection ownership. Prepared inquiries are
 DateField now uses the shared DateCalendar native-popover surface instead of the browser date picker. Open on the day grid at today for an empty field or the existing selected date. Header controls let users choose year/month; changing year/month does not commit a value until a day is chosen. Manual input remains. Future dates are disabled, years paginate back to 0001 without adding insurer eligibility rules, and closing without selection preserves the current date.
 
 Latest reset behavior: browser refresh creates an empty in-memory draft and returns every inquiry URL to Cover question 1. Selecting a landing coverage option or applying a coverage choice resets answers, members, active editor, errors, calendar state, verification and undo notice. In-form navigation and explicit Resume preserve the current draft. Browser autocomplete is disabled on inquiry fields.
+
+## Inquiry table and read-only record routes
+
+- /inquiries lists six labelled fictional records plus session-created previews; demo rows return on refresh, while form answers and user-created previews still reset. Samples do not prefill the create form.
+- Search matches applicant name, ID and emirate; status and coverage filters combine. Created-date sorting toggles. No matching records provides Clear filters.
+- Applicant links and row arrow links open /inquiries/{id}; invalid/unavailable IDs render Inquiry not found with a return link. Refresh supports sample deep links. Session-only records become unavailable after refresh.
+- The record view is read-only. Overview uses shared cover/applicant mappings; People selects an insured person; Activity distinguishes illustrative sample events from local preparation. Sponsor is excluded from insured-person count.
+- Date/time rendering uses the client Asia/Karachi timezone; activity times are labelled PKT.
+- Copy reference handles clipboard denial; email and phone are explicit user-operated links.
+- PageLoader opens centrally during a cancellable 650ms local record transition; there is no network request or fabricated percentage. It uses a status announcement, a return action and reduced-motion styling. The loaded page focuses its heading.
+- New labels are mapped by src/inquiryTranslations.ts and merged into the existing React Context dictionary. No new runtime packages.
+
+## Latest record view changes
+
+- Record name is derived from product plus applicant email; the table and detail header share that naming convention.
+- Overview shows Cover details and Applicant information. Activity tab/timeline is removed.
+- PremiumBreakdown renders optional record pricing, with a native open/collapse control. Sample base/additional amounts and a fictional demonstration VAT rate are fixture data, not eligibility/rating/tax advice. Displayed gross is base plus additional; tax and totals round for display. No prices are derived for real session previews.
+- People in cover displays a family tree with an applicant/sponsor root and spouse, children, parents and other branches as present in the data. All people and details are visible by default; only relationship groups collapse. No member selection state exists. Sponsor is excluded from insured count when appropriate.
+- Documents appears after the detail layout. Samples have explicit illustrative preview buttons. Preview content is local HTML, not an uploaded/downloadable PDF. New session records have no documents. There is no upload step yet.
+
+Latest stage order: self uses Cover ? Your details ? Documents ? Review; family adds Family before Documents; dependents-only uses Sponsor details. The completed Documents flag permits review after the user continues, including with no files. Draft file edits clear that acknowledgement. Legacy sections describing a future upload step or OTP are superseded by this implementation.

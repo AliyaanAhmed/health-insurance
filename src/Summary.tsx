@@ -42,7 +42,7 @@ export function DataRows({ rows }: { rows: [string, string][] }) {
     </dl>
   )
 }
-function coverRows(draft: Draft, locale: string): [string, string][] {
+export function coverRows(draft: Draft, locale: string): [string, string][] {
   return [
     ['Visa type', visaOptions.find((o) => o.value === draft.visaType)?.label ?? ''],
     ['Nationality', countryName(draft.nationalityCode, locale)],
@@ -50,7 +50,7 @@ function coverRows(draft: Draft, locale: string): [string, string][] {
     ['Visa status', statusOptions.find((o) => o.value === draft.visaStatus)?.label ?? ''],
   ]
 }
-function applicantRows(draft: Draft, locale: string): [string, string][] {
+export function applicantRows(draft: Draft, locale: string): [string, string][] {
   const a = draft.applicant
   return [
     ['Full name', a.fullName.trim()],

@@ -26,7 +26,7 @@ export const art = {
 export type CoverageTarget = 'self' | 'self_and_dependents' | 'dependents_only'
 export type Gender = '' | 'male' | 'female'
 export type Relationship = 'spouse' | 'child' | 'parent' | 'other'
-export type Stage = 'cover' | 'details' | 'family' | 'review'
+export type Stage = 'cover' | 'details' | 'family' | 'documents' | 'review'
 export type SalaryBand = '' | 'above_4000' | 'below_4000' | 'pending_4000'
 export interface Person {
   fullName: string
@@ -45,6 +45,8 @@ export interface Member extends Person {
   saved: boolean
 }
 export interface Draft {
+  documents: InquiryDocument[]
+  documentsConfirmed: boolean
   coverageTarget: CoverageTarget
   visaType: string
   nationalityCode: string
@@ -53,7 +55,23 @@ export interface Draft {
   applicant: Applicant
   members: Member[]
 }
+export interface InquiryPremium {
+  base: number
+  additional: number
+  taxPercent: number
+}
+export interface InquiryDocument {
+  id: string
+  name: string
+  category: 'applicant' | 'visa' | 'family'
+  sample?: boolean
+  file?: File
+}
 export interface Inquiry {
+  premium?: InquiryPremium
+  documents?: InquiryDocument[]
+  sample?: boolean
+  status?: 'reviewing' | 'ready' | 'received'
   id: string
   draft: Draft
   createdAt: string
@@ -98,6 +116,7 @@ export const stageLabels: Record<Stage, string> = {
   cover: 'Cover',
   details: 'Your details',
   family: 'Family',
+  documents: 'Documents',
   review: 'Review',
 }
 export const countryCodes =
@@ -110,6 +129,8 @@ export function countryName(code: string, locale = 'en') {
 export function createDraft(coverageTarget: CoverageTarget = 'self'): Draft {
   return {
     coverageTarget,
+    documents: [],
+    documentsConfirmed: false,
     visaType: '',
     nationalityCode: '',
     visaEmirate: '',
@@ -175,8 +196,8 @@ export const isMemberComplete = (member: Member) =>
   member.saved && Object.keys(personErrors(member)).length === 0
 export function stagesFor(target: CoverageTarget): Stage[] {
   return target === 'self'
-    ? ['cover', 'details', 'review']
-    : ['cover', 'details', 'family', 'review']
+    ? ['cover', 'details', 'documents', 'review']
+    : ['cover', 'details', 'family', 'documents', 'review']
 }
 export function portrait(person: Partial<Person>, relationship?: Relationship) {
   if (!person.gender) return null

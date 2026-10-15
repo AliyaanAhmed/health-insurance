@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Buildings,
   Briefcase,
+  Files,
   CaretDown,
   Check,
   CheckCircle,
@@ -52,6 +53,8 @@ import {
 } from './ui'
 import { focusInvalid } from './formUtils'
 import { ReviewContent, Summary } from './Summary'
+import { DocumentUpload } from './DocumentUpload'
+import { InquiryDocuments } from './InquiryDocuments'
 
 function CountryPicker({
   value,
@@ -162,11 +165,18 @@ function Stepper({
 }) {
   const { t } = useLanguage()
   const stages = stagesFor(draft.coverageTarget)
-  const stepIcons = { cover: ShieldCheck, details: User, family: Users, review: CheckCircle }
+  const stepIcons = {
+    cover: ShieldCheck,
+    details: User,
+    family: Users,
+    documents: Files,
+    review: CheckCircle,
+  }
   const valid: Record<Stage, boolean> = {
     cover: Object.keys(coverErrors(draft)).length === 0,
     details: isApplicantComplete(draft),
     family: draft.members.length > 0 && draft.members.every(isMemberComplete),
+    documents: draft.documentsConfirmed,
     review: false,
   }
   return (
@@ -186,7 +196,7 @@ function Stepper({
                 aria-current={current ? 'step' : undefined}
               >
                 <span className="step-number">
-                  <StepIcon weight={current || valid[item] ? "fill" : "regular"} />
+                  <StepIcon weight={current || valid[item] ? 'fill' : 'regular'} />
                 </span>
                 <span>
                   <strong>
@@ -255,7 +265,7 @@ export function Inquiry({
   group,
   onNavigate,
   onHome,
-  onVerify,
+  onCreate,
   activeMemberId,
   setActiveMemberId,
   onChangeCoverage,
@@ -267,7 +277,7 @@ export function Inquiry({
   group: number
   onNavigate: (stage: Stage, group?: number) => void
   onHome: () => void
-  onVerify: () => void
+  onCreate: () => void
   activeMemberId: string | null
   setActiveMemberId: (id: string | null) => void
   onChangeCoverage: () => void
@@ -291,10 +301,14 @@ export function Inquiry({
   const [addOpen, setAddOpen] = useState(false)
   const sponsor = draft.coverageTarget === 'dependents_only'
   useEffect(() => {
-    if (draft.members.some((member) => member.relationship === 'spouse' && member.gender !== 'female')) {
+    if (
+      draft.members.some((member) => member.relationship === 'spouse' && member.gender !== 'female')
+    ) {
       setDraft((current) => ({
         ...current,
-        members: current.members.map((member) => member.relationship === 'spouse' ? { ...member, gender: 'female' } : member),
+        members: current.members.map((member) =>
+          member.relationship === 'spouse' ? { ...member, gender: 'female' } : member,
+        ),
       }))
     }
   }, [draft.members, setDraft])
@@ -355,7 +369,14 @@ export function Inquiry({
       ...current,
       members: [
         ...current.members,
-        { id, relationship, fullName: '', dateOfBirth: '', gender: relationship === 'spouse' ? 'female' : '', saved: false },
+        {
+          id,
+          relationship,
+          fullName: '',
+          dateOfBirth: '',
+          gender: relationship === 'spouse' ? 'female' : '',
+          saved: false,
+        },
       ],
     }))
     setActiveMemberId(id)
@@ -402,7 +423,7 @@ export function Inquiry({
         return
       }
       if (group < 2) onNavigate('details', group + 1)
-      else if (draft.coverageTarget === 'self') onNavigate('review', 0)
+      else if (draft.coverageTarget === 'self') onNavigate('documents', 0)
       else onNavigate('family', 0)
     } else if (stage === 'family') {
       if (active) {
@@ -423,7 +444,10 @@ export function Inquiry({
         notify('Member details saved.')
       } else if (!draft.members.length) setAddOpen(true)
       else if (nextIncomplete) setActiveMemberId(nextIncomplete.id)
-      else onNavigate('review', 0)
+      else onNavigate('documents', 0)
+    } else if (stage === 'documents') {
+      setDraft((current) => ({ ...current, documentsConfirmed: true }))
+      onNavigate('review', 0)
     } else {
       const cover = coverErrors(draft)
       if (Object.keys(cover).length) {
@@ -455,7 +479,11 @@ export function Inquiry({
         })
         return
       }
-      onVerify()
+      if (!draft.documentsConfirmed) {
+        onNavigate('documents', 0)
+        return
+      }
+      onCreate()
     }
   }
   function back() {
@@ -484,7 +512,9 @@ export function Inquiry({
             : 'How can we reach you?'
         : stage === 'family'
           ? 'Let’s add the people you love.'
-          : 'One last look.'
+          : stage === 'documents'
+            ? 'Add your documents.'
+            : 'One last look.'
   const description =
     stage === 'cover'
       ? 'A few details to point us in the right direction.'
@@ -496,7 +526,9 @@ export function Inquiry({
             : 'Keep your contact details handy for the next step.'
         : stage === 'family'
           ? 'We’ll guide you through each person, one at a time.'
-          : 'Check the details below. You can still change anything.'
+          : stage === 'documents'
+            ? 'A few supporting documents can help complete your inquiry.'
+            : 'Check the details below. You can still change anything.'
   const primaryLabel =
     stage === 'family'
       ? active
@@ -505,10 +537,12 @@ export function Inquiry({
           ? 'Add person'
           : nextIncomplete
             ? 'Open next member'
-            : 'Continue to review'
+            : 'Continue to documents'
       : stage === 'review'
-        ? 'Continue to verification'
-        : 'Continue'
+        ? 'Create Inquiry'
+        : stage === 'documents'
+          ? 'Continue to review'
+          : 'Continue'
   const hasErrors = Object.values(errors).some(Boolean)
   return (
     <div className="inquiry-layout">
@@ -605,7 +639,12 @@ export function Inquiry({
                     options={emirates.map((emirate) => ({
                       value: emirate,
                       label: emirate,
-                      helper: emirate === 'Abu Dhabi' ? 'DoH rules' : emirate === 'Dubai' ? 'DHA rules' : 'MoH rules',
+                      helper:
+                        emirate === 'Abu Dhabi'
+                          ? 'DoH rules'
+                          : emirate === 'Dubai'
+                            ? 'DHA rules'
+                            : 'MoH rules',
                       icon: <MapPin size={19} />,
                     }))}
                   />
@@ -816,7 +855,9 @@ export function Inquiry({
                         {t('Remove')}
                       </button>
                     </div>
-                    <div className={`member-fields ${active.relationship === 'spouse' ? 'spouse-fields' : ''}`}>
+                    <div
+                      className={`member-fields ${active.relationship === 'spouse' ? 'spouse-fields' : ''}`}
+                    >
                       <TextField
                         id="member-fullName"
                         name="fullName"
@@ -837,17 +878,17 @@ export function Inquiry({
                         onBlur={() => validateMemberField('dateOfBirth')}
                       />
                       {active.relationship !== 'spouse' && (
-                      <GenderGroup
-                        value={active.gender}
-                        relationship={active.relationship}
-                        dateOfBirth={active.dateOfBirth}
-                        onChange={(value) => updateMember('gender', value)}
-                        error={errors.gender}
-                        child={
-                          active.relationship === 'child' ||
-                          (ageOf(active.dateOfBirth) !== null && ageOf(active.dateOfBirth)! < 18)
-                        }
-                      />
+                        <GenderGroup
+                          value={active.gender}
+                          relationship={active.relationship}
+                          dateOfBirth={active.dateOfBirth}
+                          onChange={(value) => updateMember('gender', value)}
+                          error={errors.gender}
+                          child={
+                            active.relationship === 'child' ||
+                            (ageOf(active.dateOfBirth) !== null && ageOf(active.dateOfBirth)! < 18)
+                          }
+                        />
                       )}
                     </div>
                   </div>
@@ -893,6 +934,14 @@ export function Inquiry({
                 )}
               </>
             )}
+            {stage === 'documents' && (
+              <DocumentUpload
+                documents={draft.documents ?? []}
+                onChange={(documents) =>
+                  setDraft((current) => ({ ...current, documents, documentsConfirmed: false }))
+                }
+              />
+            )}
             {stage === 'review' && (
               <>
                 {draft.applicant.salaryBand === 'pending_4000' && (
@@ -903,6 +952,10 @@ export function Inquiry({
                   </Hint>
                 )}
                 <ReviewContent draft={draft} onEdit={onNavigate} onEditMember={openMember} />
+                <InquiryDocuments
+                  record={{ id: '', draft, createdAt: '', documents: draft.documents }}
+                  onEdit={() => onNavigate('documents', 0)}
+                />
               </>
             )}
           </div>
@@ -950,9 +1003,15 @@ export function Inquiry({
                 >
                   <span className="relationship-art" aria-hidden="true">
                     {relationship === 'parent' ? (
-                      <><img src={art.father} alt="" /><img src={art.mother} alt="" /></>
+                      <>
+                        <img src={art.father} alt="" />
+                        <img src={art.mother} alt="" />
+                      </>
                     ) : relationship === 'child' ? (
-                      <><img src={art.boy} alt="" /><img src={art.girl} alt="" /></>
+                      <>
+                        <img src={art.boy} alt="" />
+                        <img src={art.girl} alt="" />
+                      </>
                     ) : relationship === 'spouse' ? (
                       <img src={art.woman} alt="" />
                     ) : (

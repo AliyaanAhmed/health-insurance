@@ -3481,3 +3481,21 @@ progress::-moz-progress-bar {
 @media (prefers-reduced-motion: reduce) { .health-calendar:popover-open { animation: none; } }
 
 .health-calendar .calendar-today { box-shadow: inset 0 0 0 1px var(--health-primary); color: var(--health-primary); font-weight: 650; }
+/* Crossfade captured route surfaces; preserve the old view until the new view exists. */
+::view-transition-group(root) { animation: none; }
+::view-transition-old(root) { animation: health-route-out 380ms ease-in-out both; }
+::view-transition-new(root) { animation: health-route-in 380ms ease-in-out both; }
+::view-transition-old(root), ::view-transition-new(root) { mix-blend-mode: plus-lighter; }
+@keyframes health-route-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes health-route-in { from { opacity: 0; } to { opacity: 1; } }
+html[data-route-motion='crossfade'] .editor-surface,
+html[data-route-motion='crossfade'] .inquiry-intro,
+html[data-route-motion='crossfade'] .hero-copy,
+html[data-route-motion='crossfade'] .hero-visual,
+html[data-route-motion='crossfade'] .detail-tab-panel { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+}
+/* Home fills the available viewport without reserving an unused scrollbar strip. */
+html:has(.landing) { scrollbar-gutter: auto; }
+.landing { width: 100%; max-width: none; }

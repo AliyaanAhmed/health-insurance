@@ -113,3 +113,39 @@ Date picker: shared DateCalendar replaces the native date input picker. A compac
 Reset preference: refresh or coverage selection starts a new empty inquiry at Cover question 1, including reselecting the same coverage. Form remount clears internal validation and calendar state. Coverage dialog explains that all previous answers will be cleared.
 
 Calendar opening refinement: open directly on the day grid for the current month/year when the field is empty, with today outlined but not committed. Existing values open their selected month/year. Header month/year buttons still open the respective choice grids.
+
+## Inquiry list, record view and shared loader
+
+The list now uses a semantic table with applicant avatars, references, cover type/emirate, people count, status, date sorting and explicit open links. Search matches name/reference/emirate; status buttons and a coverage filter combine. Three quiet summary counts introduce the table. Six fictional samples cover all three paths and are explicitly labelled. New session previews share the same table.
+
+A dedicated /inquiries/{id} hash route replaces the old record modal. The record identity header leads into Overview, People in cover and Activity tabs. Main content uses labelled read-only values, and an aside summarizes cover count, emirate/rule label and actionable email/telephone contacts. The People tab uses an interactive person picker and shared portrait/date/field primitives. Sample activity is explicitly illustrative; session previews show only their actual preparation event. Unknown IDs have a return action.
+
+PageLoader is a reusable centered full-screen health-themed surface: Phosphor heartbeat tile, thin orbit, breathing halo, dots and indeterminate rail. Opening a record currently uses a cancellable 650ms local transition to demonstrate the loader without claiming a backend request. It respects reduced motion and offers Back to inquiries. Loaded records focus their title. src/InquiryRecords.css owns these screens; existing health tokens, fonts and mobile/RTL behavior are reused.
+
+Detail alignment: on desktop/tablet, the tabs occupy their own grid row and the cover-summary aside shares the content row with the first detail section. The Your health cover card therefore starts at Cover details, rather than at the tabs.
+
+## Inquiry view: premium, documents and family structure
+
+The latest reference replaces the identity-only header with two columns: inquiry name/status on the left and a collapsible premium breakdown on the right. Inquiry names use the exact structure "Inquiry for Health Insurance - applicant email" in both the record header and table. Pricing shows total prominently, then base/additional/gross premium, VAT rate/amount and total. Fixtures supply illustrative prices and a sample VAT rate; user-created previews remain Not calculated yet. No underwriting calculation or production tax assumptions have been introduced.
+
+Overview retains cover details and Applicant information (never driver information). The summary aside remains aligned with the first detail section below the tabs. Activity is removed; only Overview and People in cover remain. People use an accessible family diagram: applicant/sponsor root with connected relationship groups and all member detail cards visible. Groups can collapse without implying that only one member is selected. Sponsor is explicitly not included for dependents-only.
+
+Documents is the final full-width section. Samples have labelled illustrative PDF metadata with local HTML previews; those previews clearly state that no file was uploaded. Session-created inquiries show an empty attachments state. Upload remains outside the create form until requested. Existing teal palette, sizes, responsive reflow and reduced motion apply.
+
+Latest record tab refinement: Overview is renamed Details. Remove the Everyone in this cover shortcut. Documents is the last component inside Details, and is not rendered in People in cover.
+
+Sample content preference: inquiry applicants and family members use fictional Emirati Arabic names in English transliteration, with UAE nationality and corresponding example.com email addresses.
+
+## Documents and direct creation
+
+Latest flow replaces OTP with Create Inquiry. All cover paths now pass through Documents before One last look. Documents uses the supplied Stylized Emirates ID upload card-2.png and Passport Visa Upload Illustration-1.png in small reference tiles, then a teal drag/drop surface and Browse files. Attachments support PDF/JPG/PNG/WEBP, 10 MB each, 10 files maximum; these are prototype upload limits, not insurer requirements. Documents remain optional until business rules specify otherwise. Each added file displays name, size, preview and remove. Rejected/duplicate files show reasons. Final review includes attachments with Edit.
+
+Create Inquiry validates the draft and completed document step, shows an 850ms centered creation loader, creates a local record with attached File objects, and opens its Details view directly without a second loader. A ref guards duplicate clicks, and leaving cancels pending creation. Image/PDF preview and download are shared by create/review/view. Blob URLs are scoped to an open preview and revoked on close; files are never put into localStorage or sent to a server. Refresh clears session files. Existing summary alignment and Details-only document placement remain.
+
+Final review layout: One last look pairs Cover details and applicant/sponsor details in a two-column grid, followed by paired member sections. Review cards use compact label/value spacing. Documents remains the final full-width attachment section. Below 768px, review sections stack for readability.
+
+Navigation motion refinement: hash-route changes use the browser View Transition API with a 380ms overlapping outgoing/incoming opacity crossfade. flushSync commits the next React route in the snapshot callback and scrolling resets before the incoming capture. There is no navigation timer or empty editor interval. Capture-level fading temporarily disables nested editor/intro/hero entrance animations to avoid a double fade. Repeated navigation skips the previous transition. Reduced motion navigates directly; unsupported browsers retain the existing incoming component transitions.
+
+Crossfade replay fix: route entrance animations stay disabled after native crossfade navigation has been activated. Clearing only the in-flight marker no longer re-enables/restarts editor or intro animations at the end of a transition, preventing the second fade/jerk.
+
+Home width refinement: remove the landing page's 1536px maximum and use the full available width. Disable the reserved stable scrollbar gutter only while the landing page is present; actual scrolling remains available when content overflows.

@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { LanguageContext } from './language-context'
 import type { Language } from './language-context'
+import { inquiryArabic } from './inquiryTranslations'
 
 const arabic: Record<string, string> = {
+  ...inquiryArabic,
   'Skip to content': 'انتقل إلى المحتوى',
   'Choose date of birth': 'اختر تاريخ الميلاد',
   'Day / month / year': 'يوم / شهر / سنة',
@@ -18,9 +20,10 @@ const arabic: Record<string, string> = {
   'Choose a month': 'اختر الشهر',
   'Choose a day': 'اختر اليوم',
   'Clear date': 'مسح التاريخ',
-  'Previous': 'السابق',
-  'Next': 'التالي',
-  'Changing cover starts a new inquiry and clears all previous answers.': 'تغيير التغطية يبدأ استفساراً جديداً ويمسح جميع الإجابات السابقة.',
+  Previous: 'السابق',
+  Next: 'التالي',
+  'Changing cover starts a new inquiry and clears all previous answers.':
+    'تغيير التغطية يبدأ استفساراً جديداً ويمسح جميع الإجابات السابقة.',
   Home: 'الرئيسية',
   'New inquiry': 'استفسار جديد',
   'Your health.': 'صحتك.',
