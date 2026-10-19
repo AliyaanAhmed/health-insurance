@@ -1,70 +1,58 @@
-# InsureAI Health SPA
+# InsureAI Health
 
-React + TypeScript + Vite frontend for the **Health Insurance SPA** Power Pages code site. Current work is a local UI preview: no Dataverse, real SMS, insurer quoting or persistent customer storage.
+React 19, TypeScript and Vite SPA for the separate **Health Insurance SPA** Power Pages site.
 
-See [Technical and Design Guide](TECHNICAL-AND-DESIGN-GUIDE.md) for the complete stack, package versions, fonts, theme, font sizes, layouts, form behavior and deployment notes.
-
-## Run locally
+## Development
 
 ```sh
 npm install
 npm run dev -- --host 0.0.0.0
 ```
 
-Open `http://localhost:5173/`. Vite refreshes the UI as source files change.
+Open `http://localhost:5173`. Live Dataverse calls require the hosted Power Pages origin and session; localhost shows a connection error rather than fabricated prices or records.
 
-## Experience
+## Current experience
 
-- Hero and three coverage entry choices using the supplied health artwork.
-- Guided cover and personal/sponsor details, conditional member step, Documents, editable summary and final review.
-- One member editor at a time, female spouse without a gender selector per the user business rule, parent/child artwork pairs, saved completion and removal with Undo.
-- English/Arabic, RTL, mobile summary disclosure, responsive actions and reduced motion.
-- Final review ends with **Create Inquiry**: a short themed loader creates the session-only record and opens its detail view directly. No OTP is used.
-- My Inquiries is a searchable, filterable table with six labelled fictional samples and any previews prepared in the current visit. Refresh clears the draft/user previews and restores the sample fixtures.
-- A salary of exactly AED 4,000 stays explicitly pending business confirmation.
+- Landing with three coverage choices and healthcare hero.
+- Guided Cover → Your/Sponsor details → optional Family → Review flow; no OTP, documents or left stepper.
+- Person icons, custom calendar/dropdowns, English/Arabic, RTL and reduced motion.
+- **Your quote so far** shows answered-field editing and one dynamically calculated AED reference premium.
+- **Create a Request** finds/creates the contact, saves the quote and customer JSON, then opens the saved summary modal over **My Requests**.
+- My Requests retrieves Health Insurance quotes from Dataverse; no sample records are injected into the running application.
+- Refresh/coverage changes clear unsaved answers. Saved Dataverse requests persist.
+- Exactly AED 4,000 salary remains pending business confirmation. Salary stays AED; premiums use AED without conversion, as confirmed.
 
-## Quality checks
+## Integration
 
-```sh
-npm run build
-npm run lint
-npm run format:check
-npm run test:ui
-```
+See [Health Dataverse Integration](docs/health-dataverse-integration.md) for endpoints, live JSON model, calculation, rounding, settings and access limitations. The supplied [table/API guide](DATAVERSE-TABLES-AND-WEB-API.md) describes original Motor patterns; the Health integration document records this implementation.
 
-Browser tests require the local dev server and installed Google Chrome. They use a fresh headless profile and synthetic local data. Evidence is written to `.qa/` (ignored by source control). See `design-qa.md` for visual comparison and test evidence.
+The required API enable/field settings in `.powerpages-site/site-settings` were uploaded with the app on October 16, 2026. The user confirmed that this internal POC will retain its existing anonymous web-role permissions; no permission changes or extra authentication flow are required. The account menu remains a preview identity. Live write verification has not been performed.
 
-## Assets and structure
+## Main files
 
-The original supplied PNGs remain in `src/assets`. Optimized, transparent WebP copies are in `src/assets/optimized`; regenerate with `npm run assets:optimize`. Variable fonts are bundled with the app.
+| File                                         | Responsibility                                  |
+| -------------------------------------------- | ----------------------------------------------- |
+| `src/health.ts`                              | Form model, options, age helpers and validation |
+| `src/healthPricing.ts`                       | Live customer JSON, rate matching and totals    |
+| `src/powerPagesApi.ts`                       | Token, catalog, contact and quote operations    |
+| `src/useHealthCatalog.ts`                    | Catalog loading and derived JSON                |
+| `src/Inquiry.tsx`                            | Guided form and family editing                  |
+| `src/Summary.tsx`, `src/PremiumRange.tsx`    | Compact answers and live premium                |
+| `src/InquiryList.tsx`, `src/InquiryView.tsx` | Request cards and summary modal                 |
+| `src/PageLoader.tsx`                         | Animated operation loader                       |
+| `src/SimpleExperience.css`                   | Current customer UI and integration states      |
 
-- `src/health.ts`: field types, option catalogs, pure validation, age/date helpers and asset map.
-- `src/ui.tsx`: shared accessible fields, choices, avatars, modal and buttons.
-- `src/Inquiry.tsx`: guided question groups, family editing and step validation.
-- `src/Summary.tsx`: shared summary/review presentation.
-- `src/InquiryList.tsx`: inquiry table, search, status/coverage filters and date sorting.
-- `src/InquiryView.tsx`: read-only overview, email-based inquiry title, premium breakdown, family tree, documents and contact summary.
-- `src/PremiumBreakdown.tsx`: collapsible pricing summary with illustrative sample amounts and an unpriced state.
-- `src/FamilyTree.tsx`: applicant/sponsor root and grouped spouse, child, parent and other member details.
-- `src/InquiryDocuments.tsx`: end-of-record attachments, sample previews and empty state.
-- `src/PageLoader.tsx`: shared centered animated loading surface, used for inquiry opening.
-- `src/inquiryData.ts`: fictional sample fixtures and record display helpers.
-- `src/InquiryRecords.css`: list, detail and loader styles.
-- `src/DocumentUpload.tsx`: health-document guidance, drag/drop, file validation and removal.
-- `src/FilePreview.tsx`: shared local image/PDF preview and download with scoped Blob URLs.
-- `src/App.tsx`: hash navigation, in-memory draft/inquiry state and recovery.
-- `src/index.css`: canonical health tokens, fonts and global accessibility baseline.
-- `DESIGN.md`, `UX-CONTRACT.md`, `docs/health-field-map.md`: durable design, interaction and business scope.
+The [Technical and Design Guide](TECHNICAL-AND-DESIGN-GUIDE.md) records packages, fonts, sizes and theme. The latest integration sections in `DESIGN.md` and `UX-CONTRACT.md` supersede earlier fixture behavior. Dormant upload utilities and sample fixtures remain outside the active flow.
 
-## Power Pages
-
-The separate `powerpages.config.json` and `.powerpages-site` metadata target Health Insurance SPA, website ID `d8f4dd5d-9fd0-4c5a-9e92-640da9e2dd5c`. Keep Motor deployments independent. The UI changes in this iteration are for localhost; upload only when a release is requested:
+## Build and release
 
 ```sh
 npm run build
-pac pages upload-code-site --rootPath .
+pac pages upload-code-site --rootPath . --siteName "Health Insurance SPA"
 ```
 
-Before a future release, confirm the environment/site ID, allowed WebP/font attachments and bundle-cleanup coverage. Real APIs, authorization, draft persistence, consent copy and OTP provider belong to the integration phase.
+Website ID: `d8f4dd5d-9fd0-4c5a-9e92-640da9e2dd5c`; environment: `https://insureai.crm6.dynamics.com`. The CLI upload processes changed metadata in `.powerpages-site`, including the ten Web API settings in this release. Do not overwrite current configuration with a stale full export or change Motor Insurance. Deployment is a separate release action.
 
-Document attachments currently remain in browser memory only, along with the local inquiry. Refresh or switching coverage clears the draft files. Supported files are PDF/JPG/PNG/WEBP, up to 10 MB each and 10 files per inquiry. Existing older browser scenarios still reference the superseded OTP flow and need revision before reuse.
+Legacy browser tests target superseded flows and require updates before reuse. No browser capture cycle or live test records were used during this integration.
+
+Latest release: October 16, 2026 ? production build passed; Health Insurance SPA upload succeeded in Insure AI. Includes AED premium display, Dataverse integration and all ten API settings. No live contact/quote submission was performed.

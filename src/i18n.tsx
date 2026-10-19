@@ -3,8 +3,10 @@ import type { ReactNode } from 'react'
 import { LanguageContext } from './language-context'
 import type { Language } from './language-context'
 import { inquiryArabic } from './inquiryTranslations'
+import { followUpArabic } from './followUpTranslations'
 
 const arabic: Record<string, string> = {
+  ...followUpArabic,
   ...inquiryArabic,
   'Skip to content': 'انتقل إلى المحتوى',
   'Choose date of birth': 'اختر تاريخ الميلاد',

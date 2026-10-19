@@ -1,22 +1,29 @@
-import { useEffect, useRef, useState } from 'react'
-import { CaretDown, PencilSimple, ShieldCheck } from '@phosphor-icons/react'
+import {
+  Check,
+  PencilSimple,
+  ShieldCheck,
+  Globe,
+  MapPin,
+  IdentificationCard,
+  User,
+  Users,
+  Cake,
+  CurrencyCircleDollar,
+} from '@phosphor-icons/react'
 import {
   ageOf,
-  art,
   countryName,
   coverageOptions,
   displayDate,
   formatMobile,
-  isApplicantComplete,
-  isMemberComplete,
-  maskedEmail,
   relationshipLabels,
   statusOptions,
   visaOptions,
 } from './health'
 import type { Draft, Stage } from './health'
 import { useLanguage } from './language-context'
-import { Avatar, Hint, Status } from './ui'
+import { Avatar } from './ui'
+import { PremiumRange } from './PremiumRange'
 
 function salaryLabel(band: string) {
   return band === 'above_4000'
@@ -63,208 +70,173 @@ export function applicantRows(draft: Draft, locale: string): [string, string][] 
   ]
 }
 
+export function memberSummary(draft: Draft, t: (text: string) => string) {
+  const groups = [
+    { key: 'spouse', one: 'spouse', many: 'spouses' },
+    { key: 'child', one: 'child', many: 'children' },
+    { key: 'parent', one: 'parent', many: 'parents' },
+    { key: 'other', one: 'dependant', many: 'dependants' },
+  ]
+  return groups
+    .flatMap((group) => {
+      const count = draft.members.filter((member) => member.relationship === group.key).length
+      return count ? [count + ' ' + t(count === 1 ? group.one : group.many)] : []
+    })
+    .join(', ')
+}
+export function InquirySummaryCard({
+  draft,
+  onEdit,
+  onChangeCoverage,
+  showPeople = false,
+}: {
+  draft: Draft
+  onEdit?: (stage: Stage, group?: number) => void
+  onChangeCoverage?: () => void
+  showPeople?: boolean
+}) {
+  const { t, locale } = useLanguage()
+  const option = coverageOptions.find((item) => item.value === draft.coverageTarget)!
+  const age = ageOf(draft.applicant.dateOfBirth)
+  const rows: { label: string; value: string; stage: Stage; group: number }[] = [
+    {
+      label: 'Nationality',
+      value: countryName(draft.nationalityCode, locale),
+      stage: 'cover',
+      group: 1,
+    },
+    { label: 'Visa emirate', value: draft.visaEmirate, stage: 'cover', group: 2 },
+    {
+      label: 'Visa status',
+      value: statusOptions.find((item) => item.value === draft.visaStatus)?.label ?? '',
+      stage: 'cover',
+      group: 3,
+    },
+    { label: 'Name', value: draft.applicant.fullName.trim(), stage: 'details', group: 2 },
+    { label: 'Age', value: age === null ? '' : age + ' ' + t('years'), stage: 'details', group: 1 },
+    { label: 'Salary', value: salaryLabel(draft.applicant.salaryBand), stage: 'details', group: 1 },
+    ...(draft.coverageTarget === 'self'
+      ? []
+      : [{ label: 'Members', value: memberSummary(draft, t), stage: 'family' as Stage, group: 0 }]),
+  ]
+  const rowIcons = {
+    Nationality: Globe,
+    'Visa emirate': MapPin,
+    'Visa status': IdentificationCard,
+    Name: User,
+    Age: Cake,
+    Salary: CurrencyCircleDollar,
+    Members: Users,
+  }
+  const CoverIcon = draft.coverageTarget === 'self' ? User : Users
+  return (
+    <section
+      className={`minimal-cover-card ${onEdit ? 'quote-live-card' : ''}`}
+      aria-label={t(onEdit ? 'Your quote so far' : 'Your health cover')}
+    >
+      {onEdit && (
+        <div className="quote-panel-heading">
+          <h2>{t('Your quote so far')}</h2>
+          <span className="quote-live-dot" aria-hidden="true" />
+        </div>
+      )}
+      <div className="minimal-cover-title">
+        {onEdit && (
+          <span className="quote-cover-icon" aria-hidden="true">
+            <CoverIcon size={23} />
+          </span>
+        )}
+        <span>
+          <small>{t('Cover for')}</small>
+          <strong>{t(option.label)}</strong>
+        </span>
+        {onChangeCoverage ? (
+          <button
+            type="button"
+            className="summary-change"
+            onClick={onChangeCoverage}
+            aria-label={t('Change who needs cover')}
+          >
+            <PencilSimple size={17} />
+          </button>
+        ) : (
+          <ShieldCheck size={21} />
+        )}
+      </div>
+      {onEdit && <PremiumRange />}
+      <dl className="minimal-cover-values">
+        {rows.map((row) => (
+          <div key={row.label} className={onEdit ? 'quote-answer-row' : ''}>
+            <dt>
+              {onEdit &&
+                (() => {
+                  const Icon = rowIcons[row.label as keyof typeof rowIcons]
+                  return <Icon size={14} aria-hidden="true" />
+                })()}
+              {t(row.label)}
+            </dt>
+            <dd>
+              {onEdit && row.value ? (
+                <button
+                  type="button"
+                  onClick={() => onEdit(row.stage, row.group)}
+                  aria-label={t('Edit') + ' ' + t(row.label)}
+                >
+                  <span key={row.value} className="quote-answer-value">
+                    {t(row.value)}
+                  </span>
+                  <span className="quote-answer-action" aria-hidden="true">
+                    <Check size={13} weight="bold" className="quote-answer-check" />
+                    <PencilSimple size={13} className="quote-answer-pencil" />
+                  </span>
+                </button>
+              ) : (
+                <span>{row.value ? t(row.value) : '—'}</span>
+              )}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      {onEdit && (
+        <div className="quote-panel-footer">
+          <span>
+            <PencilSimple size={12} />
+            {t('Tap an answer to edit')}
+          </span>
+        </div>
+      )}
+      {showPeople && draft.members.length > 0 && (
+        <div className="minimal-member-names">
+          {draft.members.map((member) => (
+            <div key={member.id}>
+              <Avatar person={member} relationship={member.relationship} size="small" />
+              <span>
+                <strong>{member.fullName}</strong>
+                <small>
+                  {t(relationshipLabels[member.relationship])}
+                  {ageOf(member.dateOfBirth) !== null &&
+                    ' / ' + ageOf(member.dateOfBirth) + ' ' + t('years')}
+                </small>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
 export function Summary({
   draft,
-  activeMemberId,
   onEdit,
-  onEditMember,
   onChangeCoverage,
 }: {
   draft: Draft
-  activeMemberId: string | null
   onEdit: (stage: Stage, group?: number) => void
-  onEditMember: (id: string) => void
   onChangeCoverage: () => void
 }) {
-  const { t, locale } = useLanguage()
-  const [expanded, setExpanded] = useState(false)
-  const [canStick, setCanStick] = useState(false)
-  const panelRef = useRef<HTMLDivElement>(null)
-  const detailsRef = useRef<HTMLDetailsElement>(null)
-  useEffect(() => {
-    const media = window.matchMedia('(min-width: 1024px)')
-    const update = () => {
-      if (detailsRef.current) detailsRef.current.open = media.matches
-    }
-    update()
-    media.addEventListener('change', update)
-    return () => media.removeEventListener('change', update)
-  }, [])
-  useEffect(() => {
-    const update = () =>
-      setCanStick((panelRef.current?.offsetHeight ?? Infinity) < window.innerHeight - 112)
-    const observer = new ResizeObserver(update)
-    if (panelRef.current) observer.observe(panelRef.current)
-    window.addEventListener('resize', update)
-    update()
-    return () => {
-      observer.disconnect()
-      window.removeEventListener('resize', update)
-    }
-  }, [])
-  const included = draft.coverageTarget !== 'dependents_only'
-  const applicantComplete = isApplicantComplete(draft)
-  const members = draft.coverageTarget === 'self' ? [] : draft.members
-  const total = members.length + Number(included)
-  const complete = members.filter(isMemberComplete).length + Number(included && applicantComplete)
-  const option = coverageOptions.find((o) => o.value === draft.coverageTarget)!
-  const age = ageOf(draft.applicant.dateOfBirth)
   return (
-    <aside className={`inquiry-sidebar ${canStick ? 'can-stick' : ''}`}>
-      <details ref={detailsRef} className="summary-shell">
-        <summary className="mobile-summary-trigger">
-          <ShieldCheck size={21} />
-          <span>{t('Your cover so far')}</span>
-          <span className="summary-mini-count">
-            {complete}/{total}
-          </span>
-          <CaretDown />
-        </summary>
-        <div className="cover-summary" ref={panelRef}>
-          <div className="summary-title">
-            <h2>{t('Your health cover')}</h2>
-            <span className="summary-private">
-              <ShieldCheck size={18} />
-            </span>
-          </div>
-          <div className="coverage-overview">
-            <div className="overview-main">
-              <img src={art.shield} alt="" width="1254" height="1254" />
-              <div>
-                <strong>{t(option.label)}</strong>
-                <p>
-                  {t(
-                    included
-                      ? 'You are included in this inquiry'
-                      : 'You are the sponsor and are not included',
-                  )}
-                </p>
-              </div>
-              <button
-                type="button"
-                className="icon-button"
-                onClick={onChangeCoverage}
-                aria-label={t('Change who needs cover')}
-              >
-                <PencilSimple size={17} />
-              </button>
-            </div>
-            <div className="people-completion">
-              <span>
-                {total
-                  ? `${complete} ${t('of')} ${total} ${t('people complete')}`
-                  : t('No family members added yet.')}
-              </span>
-              <progress
-                aria-label={
-                  locale === 'ar' ? 'اكتمال بيانات الأفراد' : 'People with complete details'
-                }
-                value={complete}
-                max={total || 1}
-              />
-            </div>
-          </div>
-          <section className="summary-section">
-            <div className="section-title">
-              <h3>{t('Cover details')}</h3>
-              <button onClick={() => onEdit('cover', 0)} className="edit-button">
-                <PencilSimple />
-                {t('Edit')}
-              </button>
-            </div>
-            <DataRows rows={coverRows(draft, locale)} />
-          </section>
-          <section className="summary-section">
-            <div className="section-title">
-              <h3>{t(included ? 'Your details' : 'Sponsor details')}</h3>
-              <button onClick={() => onEdit('details', 0)} className="edit-button">
-                <PencilSimple />
-                {t('Edit')}
-              </button>
-            </div>
-            {draft.applicant.fullName || draft.applicant.dateOfBirth || draft.applicant.gender ? (
-              <>
-                <div className="summary-person-heading">
-                  <Avatar person={draft.applicant} />
-                  <div>
-                    <strong>{draft.applicant.fullName || t(included ? 'You' : 'Sponsor')}</strong>
-                    <span>{age !== null ? `${age} ${t('years old')}` : t('Not added yet')}</span>
-                  </div>
-                  <Status complete={applicantComplete} />
-                </div>
-                <DataRows
-                  rows={
-                    expanded
-                      ? applicantRows(draft, locale).slice(1)
-                      : [
-                          ['Marital status', draft.applicant.maritalStatus],
-                          ['Salary', salaryLabel(draft.applicant.salaryBand)],
-                          ['Email', maskedEmail(draft.applicant.email)],
-                          ['Mobile', formatMobile(draft.applicant.mobile, true)],
-                        ]
-                  }
-                />
-                <button
-                  className="expand-link"
-                  aria-expanded={expanded}
-                  onClick={() => setExpanded((value) => !value)}
-                >
-                  {t(expanded ? 'Show less' : 'Show all details')}
-                  <CaretDown className={expanded ? 'rotate' : ''} />
-                </button>
-              </>
-            ) : (
-              <p className="summary-empty">{t('Your details will appear here as you go.')}</p>
-            )}
-          </section>
-          {draft.coverageTarget !== 'self' && (
-            <section className="summary-section">
-              <div className="section-title">
-                <h3>{t('People in your inquiry')}</h3>
-              </div>
-              {included && (
-                <button className="summary-person-row" onClick={() => onEdit('details', 0)}>
-                  <Avatar person={draft.applicant} size="small" />
-                  <span>
-                    <strong>{draft.applicant.fullName || t('You')}</strong>
-                    <small>
-                      {t('You')}
-                      {age !== null && ` · ${age}`}
-                    </small>
-                  </span>
-                  <Status complete={applicantComplete} />
-                </button>
-              )}
-              {members.map((member) => (
-                <button
-                  key={member.id}
-                  className={`summary-person-row ${activeMemberId === member.id ? 'active' : ''}`}
-                  onClick={() => onEditMember(member.id)}
-                >
-                  <Avatar person={member} relationship={member.relationship} size="small" />
-                  <span>
-                    <strong>{member.fullName || t(relationshipLabels[member.relationship])}</strong>
-                    <small>
-                      {t(relationshipLabels[member.relationship])}
-                      {ageOf(member.dateOfBirth) !== null && ` · ${ageOf(member.dateOfBirth)}`}
-                    </small>
-                  </span>
-                  <Status
-                    complete={isMemberComplete(member)}
-                    editing={activeMemberId === member.id}
-                  />
-                </button>
-              ))}
-              {!members.length && (
-                <p className="summary-empty">{t('No family members added yet.')}</p>
-              )}
-            </section>
-          )}
-          <div className="summary-foot">
-            <Hint>{t('Your information, all in one place.')}</Hint>
-          </div>
-        </div>
-      </details>
+    <aside className="inquiry-sidebar minimal-summary-sidebar">
+      <InquirySummaryCard draft={draft} onEdit={onEdit} onChangeCoverage={onChangeCoverage} />
     </aside>
   )
 }
@@ -285,7 +257,7 @@ export function ReviewContent({
         <div className="section-title">
           <h3>{t('Cover details')}</h3>
           {onEdit && (
-            <button className="edit-button" onClick={() => onEdit('cover', 0)}>
+            <button type="button" className="edit-button" onClick={() => onEdit('cover', 0)}>
               <PencilSimple />
               {t('Edit')}
             </button>
@@ -304,7 +276,7 @@ export function ReviewContent({
             {t(draft.coverageTarget === 'dependents_only' ? 'Sponsor details' : 'Your details')}
           </h3>
           {onEdit && (
-            <button className="edit-button" onClick={() => onEdit('details', 0)}>
+            <button type="button" className="edit-button" onClick={() => onEdit('details', 0)}>
               <PencilSimple />
               {t('Edit')}
             </button>
@@ -334,7 +306,11 @@ export function ReviewContent({
                 </div>
               </div>
               {onEditMember && (
-                <button className="edit-button" onClick={() => onEditMember(member.id)}>
+                <button
+                  type="button"
+                  className="edit-button"
+                  onClick={() => onEditMember(member.id)}
+                >
                   <PencilSimple />
                   {t('Edit')}
                 </button>

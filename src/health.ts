@@ -1,3 +1,4 @@
+import type { CustomerData } from './healthPricing'
 import man from './assets/optimized/man.webp'
 import woman from './assets/optimized/woman.webp'
 import boy from './assets/optimized/boy.webp'
@@ -40,6 +41,7 @@ export interface Applicant extends Person {
   email: string
 }
 export interface Member extends Person {
+  confirmedDetails?: Person
   id: string
   relationship: Relationship
   saved: boolean
@@ -68,6 +70,17 @@ export interface InquiryDocument {
   file?: File
 }
 export interface Inquiry {
+  rawCustomerData?: string
+  emailData?: string
+  etag?: string
+  basePremium?: number
+  dataverseStatus?: number
+  customerData?: CustomerData
+  name?: string
+  unreadable?: boolean
+  grossPremium?: number
+  totalAmountCharge?: number
+  contactId?: string
   premium?: InquiryPremium
   documents?: InquiryDocument[]
   sample?: boolean
@@ -196,8 +209,8 @@ export const isMemberComplete = (member: Member) =>
   member.saved && Object.keys(personErrors(member)).length === 0
 export function stagesFor(target: CoverageTarget): Stage[] {
   return target === 'self'
-    ? ['cover', 'details', 'documents', 'review']
-    : ['cover', 'details', 'family', 'documents', 'review']
+    ? ['cover', 'details', 'review']
+    : ['cover', 'details', 'family', 'review']
 }
 export function portrait(person: Partial<Person>, relationship?: Relationship) {
   if (!person.gender) return null

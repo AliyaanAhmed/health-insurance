@@ -149,3 +149,83 @@ Navigation motion refinement: hash-route changes use the browser View Transition
 Crossfade replay fix: route entrance animations stay disabled after native crossfade navigation has been activated. Clearing only the in-flight marker no longer re-enables/restarts editor or intro animations at the end of a transition, preventing the second fade/jerk.
 
 Home width refinement: remove the landing page's 1536px maximum and use the full available width. Disable the reserved stable scrollbar gutter only while the landing page is present; actual scrolling remains available when content overflows.
+
+Responsive spacing refinement: landing actions no longer enforce a minimum height, so short one-line descriptions do not leave a large empty area below. Inquiry outer gutters increase to 40-72px across laptop widths, 36px on tablet and 20-28px on mobile; the existing large desktop centered layout remains.
+
+Custom dropdown refinement: CustomSelect is the shared listbox owner for select-style fields and filters, replacing the native coverage filter and the nationality modal. Menus use white rounded surfaces, soft shadow, mint active/selected rows and teal checkmarks, with custom caret rotation. Nationality supports search and existing quick choices. Keyboard arrows, Enter, Escape, Home/End and typeahead for unsearchable lists are supported. Native popover places the menu above overflow containers and repositions for viewport room and RTL. No dropdown library was added.
+
+## Latest customer simplification (supersedes earlier record/stepper designs)
+
+Replace all person illustrations with Phosphor person/child/gender/group icons, including member tiles, gender choices and relationship selection. The hero photograph and healthcare decorative assets remain.
+
+Navbar removes My Inquiries. AccountMenu.tsx adds a top-right user icon and native popover with only name, email and a My Inquiries hyperlink. It uses a fixed local preview identity until authentication is supplied.
+
+My Inquiries becomes a small responsive card collection (three columns desktop, two tablet, one mobile), designed for a few inquiries. One explicitly labelled sample is shown, rather than a table of many unrelated customers. Cards identify the health product, coverage choice and covered members. No arbitrary purchase limit is enforced by the frontend: inquiries are not purchased policies.
+
+Opening a card renders a minimal standalone summary with no global navbar, tabs, pricing breakdown or documents. Back returns to the card collection. The prior elaborate detail layout and its family-tree/premium/document components have been removed.
+
+Creation has no left stepper and no document step. The form and right-side compact card are the only columns. The shared InquirySummaryCard shows Cover for, Nationality, Visa emirate/status, Name, Age, Salary and relationship counts for Members. Answered values have small checks and direct edit actions; placeholders use a dash. No progress bar, long guidance or repeated section headers are shown. The same card powers the read-only inquiry summary, with member names appended. SimpleExperience.css is the final layout ownership layer for this revision.
+
+Navbar refinement: remove the Home navigation link. The linked InsureAI Health logo is the home action; header uses a two-column logo/actions layout.
+
+Inquiry summary interaction refinement: inquiry cards are buttons that open the shared native-dialog summary modal over the unchanged card collection. Closing via the close control, Escape or backdrop returns to the cards without route navigation and restores focus. New inquiry creation opens this same modal on My Inquiries. Standalone detail navigation is removed; older detail links normalize to the card collection with the matching modal. The modal uses a 480px white rounded surface, soft blurred backdrop and the existing compact summary card.
+
+Customer-facing labels: Create a Request replaces Create Inquiry; My Requests replaces My Inquiries. Related New request, Request summary, Request created and creation/back labels use the same terminology. Internal model and hash-route names remain stable.
+
+Live quote panel refinement: create-only heading is Your quote so far, with a quiet live dot, mint coverage tile and functional change control. Answer rows use small field icons, full-row edit targets, check-to-pencil hover feedback and Add actions for unanswered values. A subtle filled-answer rail and one-line edit hint support orientation without another stepper. Answer-value updates fade briefly. Read-only request modal stays minimal; all styling is scoped to quote-live-card.
+
+Quote-panel navigation constraint: unanswered rows are plain non-interactive placeholders, with no Add text or plus icon. Only rows with an existing answer expose the edit button. New answers must come through the normal step-by-step form.
+
+Final-review alignment refinement: sections in each two-column row stretch to the tallest card, so Cover details and applicant/sponsor details share equal height.
+
+Quote-panel premium range: PremiumRange.tsx adds a create-only annual AED range, a bounded range visualization and expandable explanation. Coverage-specific amounts are explicitly labelled Sample range and held as presentation fixtures, not calculated underwriting prices. No nationality, medical, age, salary or member-based rating rules are invented. The actual pricing integration will replace these fixtures with approved ranges. No exact premium is presented.
+
+Quote-block compactness: cover selection and premium range share a contiguous rounded block, with a mint cover header and compact range body. Remove the inter-card gap and reduce internal spacing without removing the explanatory control.
+
+Quote footer refinement: remove the filled-answer progress bar. Retain only the small edit hint below the answers.
+
+## Dataverse integration (current behavior, 2026-10-16)
+
+This section supersedes the earlier sample pricing/records. The create panel shows one animated AED reference premium calculated from live emirate/age rates, with a priced-person count and clear incomplete/unmatched states. No sample range or lower/upper labels remain. Plan VAT is applied to the final whole-number charge, always rounded up. Salary questions remain AED. Existing compact layouts, iconography and transition behavior are preserved.
+
+The themed creation loader reflects actual contact lookup/create, quote creation and list refresh. Errors preserve answers and expose a retry path. My Requests reads Health Insurance quotes from Dataverse and opens their saved JSON in the minimal modal, including gross and VAT-inclusive amounts. No runtime fixture rows are injected. API field settings are prepared locally; the existing anonymous permissions are retained for the internal POC as confirmed by the user. See docs/health-dataverse-integration.md.
+
+Catalog loading runs silently when the create form opens. No product/plan loading banner or raw backend error is rendered in the form. A failed load keeps a short customer-facing retry message.
+
+Premium panel refinement: customer-facing heading Premium range, a single AED amount, annual-estimate caption and a quiet range-style rail with no invented numeric bounds. Amount counts smoothly to the updated sum; the rail pulses on saved membership/price changes. Remove reference-premium, Before VAT and DOB/emirate instructional copy. Applicant pricing starts on valid DOB/emirate; new members enter the sum only on Save member. Existing-member edits retain their last confirmed pricing until saved again.
+
+Premium estimate polish: remove the decorative slider/rail and shield icon. Use a compact heading row, aligned AED/amount baseline, quiet people badge and one footer divider. Every amount change starts at zero and counts in whole units with a 1.8-second sine ease; exact cents appear only in the settled value. A keyed counter prevents stale previous values flashing on updates. Reduced-motion skips counting.
+
+Request summary redesign: dedicated read-only modal at 740px maximum width, with a mint coverage header, paired cover/applicant sections, side-by-side member tiles and two premium tiles. Gross premium and Premium to be charged remain explicit, with the final charge visually emphasized. Mobile sections stack while member tiles retain two columns. Existing modal focus/Escape behavior remains. My Requests uses the shared centered heartbeat loader during its actual data fetch, with loading text available to screen readers only. No artificial wait is added.
+
+Summary header refinement: coverage label, selection and covered-person count are grouped together on the left. Gross premium and Premium to be charged appear as compact inline totals on the right, separated by a quiet vertical divider. Remove the bottom premium tiles. On small screens, totals share a row beneath the coverage information inside the same header.
+
+Empty premium spacing: do not render the people-count row until at least one person is priced. Remove the amount row minimum height in the empty state and leave only a 10px gap before the estimate help divider.
+
+My Requests loading refinement: use PageLoader in embedded mode inside the request-card region, preserving navbar, My Requests title and New request action. The centered heartbeat animation has the visible caption Loading requests. The fullscreen creation loader remains unchanged.
+
+Premium counter refinement: advance from zero in AED 50 increments, settling on the exact amount, including any remainder. Limit the animation to 900ms for large totals; reduced motion displays the final amount immediately.
+
+Single marital status hides Spouse and Child in the add-person modal. Existing spouse/child entries are cleared when switching to Single, and the total recalculates. Creation remains in the themed loader until both inquiry creation and Product Match status update complete. Product aur_premium is stored unchanged as the whole-number base premium.
+
+Single applicant family shortcuts: the inline Spouse and Child buttons have native disabled attributes plus muted gray text/background/borders, no hover elevation and a not-allowed cursor. The add-person modal continues hiding those ineligible relationships.
+
+## Request follow-ups ? October 17, 2026
+
+Status-aware card actions are sibling buttons to the summary button, never nested interactive controls. Upload Emirates ID is shown only for 751820020; KYC completion only for 751820019 unless submitted, when View KYC remains available. Refresh requests picks up backend status changes.
+
+Canonical Modal gains a dismissible/busy variant, preserving native focus trapping, Escape/backdrop handling and focus return to the card when an action disappears. FollowUps.css owns new surfaces. Upload uses the supplied ID front/back sample PNGs, a dropzone/browse alternative, preview, per-file states and actual file-count progress. Confirmed files are retained on retry; final status changes only after all file acknowledgements.
+
+KYC uses shared ChoiceGroup/Avatar primitives, horizontal member navigation, a shared family-history step, age/gender-conditioned person sections and final review. It never repeats shared family history or infers a child diagnosis from a parent. Positive answers reveal concise detail inputs. Question source and routing are in src/kycQuestions.ts and docs/HEALTH-KYC-QUESTIONS.md. Submitted answers become immutable read-only accordions. Bilingual labels/questions follow the current locale. Health details and files are kept only in page memory before server submission, not localStorage.
+
+## Create and KYC refinements — October 19, 2026
+
+The final create action is Submit. PremiumRange remains the shared live estimate surface: its maximum is the existing partial gross premium, its minimum is 90% of that maximum rounded to two decimal places. This is a display range only; persisted gross premium and VAT calculations are unchanged. Both endpoints animate together, respect reduced motion, and use the active number locale. The compact range track is decorative, not a slider or progress control. The DOH/KYC note stays visible, including when an estimate is unavailable.
+
+Family member tiles show the relationship below the name. KYC member navigation shows relationship and age. Valid answered sections retain a success border/background and checkmark after moving on; active sections also retain their stronger focus-like selection border. Changing an answer to an incomplete state removes the completed treatment. These are locally answered indicators, not server-save confirmation.
+
+## Spouse gender selection — October 19, 2026
+
+This supersedes the earlier female-only spouse rule. Spouses use the same required Male/Female GenderGroup and responsive three-field editor as other members. New spouses start with no gender selected. No effect normalizes or overwrites a saved spouse gender. KYC continues using the covered person's saved gender and DOB; existing records are not rewritten or inferred from the applicant's gender.
+
+KYC navigation refinement: member/household/review buttons now wrap and grow to fill each available row, rather than remaining content-width in a horizontal scroller. Long names wrap within each button. Completed sections use solid theme teal with white text; completion tick icons are removed. Answered remains available to screen readers. The current step keeps its selection outline independently of completion. This supersedes the earlier completed mint/checkmark treatment.

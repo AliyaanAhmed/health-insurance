@@ -152,6 +152,10 @@ h1:focus {
   --font-heading: 'Noto Sans Arabic Variable', 'Manrope Variable', sans-serif;
   --font-body: 'Noto Sans Arabic Variable', 'Inter Variable', sans-serif;
 }
+.private-mode-banner {
+  display: none !important;
+}
+
 [dir='rtl'] .directional {
   transform: rotate(180deg);
 }

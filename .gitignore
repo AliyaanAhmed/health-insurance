@@ -35,3 +35,5 @@ playwright-report/
 !.env.example
 *.pem
 *.key
+
+.integration-site-check/

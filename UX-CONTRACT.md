@@ -96,3 +96,41 @@ Latest reset behavior: browser refresh creates an empty in-memory draft and retu
 - Documents appears after the detail layout. Samples have explicit illustrative preview buttons. Preview content is local HTML, not an uploaded/downloadable PDF. New session records have no documents. There is no upload step yet.
 
 Latest stage order: self uses Cover ? Your details ? Documents ? Review; family adds Family before Documents; dependents-only uses Sponsor details. The completed Documents flag permits review after the user continues, including with no files. Draft file edits clear that acknowledgement. Legacy sections describing a future upload step or OTP are superseded by this implementation.
+
+CustomSelect.tsx is now the canonical dropdown/listbox primitive; CustomSelect.css owns its theme. InquiryList coverage filter and CountryPicker use it. Country search accepts localized/English country names and ISO codes. Selection invokes the existing behavior, including single-question auto-navigation. Popovers support outside dismissal, Escape, focus restoration on selection and keyboard navigation. Native select controls have been removed from the active UI.
+
+## Current simplified customer journey
+
+This section supersedes earlier table/detail/stepper/upload behavior. Active stage order is Cover ? Your details ? optional Family ? Review. The stepper is not rendered. No document input, review attachments or document output is shown. Creation still validates details and members, guards duplicate clicks and uses the themed creation loader before opening the new minimal summary.
+
+Summary is now InquirySummaryCard in Summary.tsx, shared by create and read-only inquiry views. It uses only essential cover/name/age/salary/member fields; edit actions exist only in creation. People are icons, never character artwork. Member counts exclude the applicant and describe relationship quantities.
+
+My Inquiries is accessed from AccountMenu, uses a small card grid and displays one sample plus local user-created records. No purchase cap is inferred from inquiry count. Opening a card uses /inquiries/{id} but no longer shows a full detail form or global navbar. No tabs, documents, activity or premium breakdown are rendered. Back returns to the cards.
+
+The account menu shows the local previewAccount object, not an authenticated identity. Refresh still clears entered form/session records and restores the single sample. Home/coverage changes start a fresh draft. The shared dropdown, calendar, auto-advance and crossfade behavior remain.
+
+Inquiry summary interaction refinement: inquiry cards are buttons that open the shared native-dialog summary modal over the unchanged card collection. Closing via the close control, Escape or backdrop returns to the cards without route navigation and restores focus. New inquiry creation opens this same modal on My Inquiries. Standalone detail navigation is removed; older detail links normalize to the card collection with the matching modal. The modal uses a 480px white rounded surface, soft blurred backdrop and the existing compact summary card.
+
+## Dataverse behavior (supersedes sample persistence/pricing)
+
+On entering creation, fetch the Health product, related plan VAT and current premium rates. Rebuild customer JSON on every answer/catalog/plan edit. Match inclusive age bands and the selected visa emirate, excluding a sponsor from dependents-only pricing. A missing/overlapping rate is visible and blocks creation; no fallback amount is invented. Premiums display AED without conversion. Gross is the sum of insured-person reference premiums; the final charge includes plan VAT and rounds up to a whole unit.
+
+Creation uses real contact lookup/create and quote POST, with a loader lasting through completion and no artificial timer. Duplicate clicks are guarded; stable IDs permit recovery after an uncertain response during the browser visit. Failures preserve the draft. My Requests reads Health-only quotes; malformed saved JSON produces an honest unavailable-details message. Refresh clears the unsaved draft, not persisted records. Source JSON stores submission-time prices rather than repricing historical requests. Account identity remains a preview; actual access follows the existing anonymous POC permissions, retained as explicitly confirmed by the user.
+
+## Request follow-up ownership
+
+InquiryList owns status-driven action visibility and uses a semantic article with a summary button plus separate follow-up buttons. EmiratesIdModal owns selection/queue state; KycModal owns transient answer drafts and navigation. ui.tsx Modal and ChoiceGroup remain canonical overlays and choices. powerPagesApi.ts owns authenticated flow calls, latest-row reads and ETag-conditional updates. kycQuestions.ts owns eligibility, conditional questions, validation, serialization and email formatting. FollowUps.css uses existing health tokens. Submitted KYC is view-only; no additional clinical inference or price adjustment occurs. Unsaved health answers are not persisted in browser storage. No live flow runs or medical submissions are made for verification.
+
+## October 19 create/KYC UI updates
+
+- Final create button: Submit; submission API, duplicate protection and success destination are unchanged.
+- Creation estimate display: minimum = 90% of the current gross estimate, maximum = current gross estimate, minimum rounded to two decimal places. The display discount does not alter persisted reference premiums, gross premium or VAT/total calculations. Both endpoints update from the same pricing snapshot; no draggable input is implied.
+- The final quote dependency on DOH checks and member KYC appears as a visible note, translated with the existing dictionary.
+- Family and KYC member navigation retain name plus relationship. KYC shows age as well.
+- KYC section completion is computed from currently applicable questions and their valid answers, not navigation history. Complete tabs have a success treatment and a checkmark; the current tab remains identifiable separately. Unsaved answer and conditional routing rules remain unchanged.
+
+Spouse gender is explicitly chosen in creation using GenderGroup, validated by personErrors and saved with the member. No default or automatic female override applies. This supersedes the original female-only exception. Existing KYC age/gender routing consumes the saved value without changing its questions or previously submitted answers.
+
+KYC section navigation now uses full-width wrapping flex rows. Completed sections use solid primary teal and an accessible Answered label without visible completion ticks. Review uses a document icon. Active step selection retains aria-current and its outline. Completion still derives from valid currently applicable answers, not visits or saved-server state.
+
+Review edit safety: every ReviewContent edit action has type=button. On the final review, only the explicit Submit button calls the creation handler; the form's implicit submit event is ignored. Earlier steps retain native form submission for Continue/Save member. Editing cover, applicant/sponsor or a member never dispatches a create request.

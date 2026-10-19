@@ -5,23 +5,21 @@ import {
   Globe,
   Heartbeat,
   Info,
-  List,
   ShieldCheck,
   User,
   Users,
   UsersThree,
-  X,
 } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { art, coverageOptions } from './health'
 import type { CoverageTarget } from './health'
 import { useLanguage } from './language-context'
 import { Modal, PrimaryButton } from './ui'
+import { AccountMenu } from './AccountMenu'
 
 export function Header({ page }: { page: string }) {
   const { t, locale, toggle } = useLanguage()
   const [help, setHelp] = useState(false)
-  const [menu, setMenu] = useState(false)
   return (
     <>
       <a
@@ -39,32 +37,13 @@ export function Header({ page }: { page: string }) {
         {t('Skip to content')}
       </a>
       <header className="site-header">
-        <a className="brand" href="#/" aria-label="InsureAI Health">
+        <a className="brand" href="#/" aria-label="InsureAI Health" aria-current={page === 'home' ? 'page' : undefined}>
           <Heartbeat className="brand-symbol" weight="duotone" />
           <span>
             <b>InsureAI</b>
             <span className="brand-product">Health</span>
           </span>
         </a>
-        <nav
-          className={`main-nav ${menu ? 'nav-open' : ''}`}
-          aria-label={locale === 'ar' ? 'التنقل الرئيسي' : 'Main navigation'}
-        >
-          <a
-            href="#/"
-            aria-current={page !== 'inquiries' ? 'page' : undefined}
-            onClick={() => setMenu(false)}
-          >
-            {t('Home')}
-          </a>
-          <a
-            href="#/inquiries"
-            aria-current={page === 'inquiries' ? 'page' : undefined}
-            onClick={() => setMenu(false)}
-          >
-            {t('My Inquiries')}
-          </a>
-        </nav>
         <div className="header-actions">
           <button
             type="button"
@@ -85,15 +64,7 @@ export function Header({ page }: { page: string }) {
             {t('How it works')}
             <ArrowUpRight size={17} className="directional" />
           </button>
-          <button
-            type="button"
-            className="icon-button mobile-menu"
-            aria-label={locale === 'ar' ? 'القائمة' : 'Menu'}
-            aria-expanded={menu}
-            onClick={() => setMenu((value) => !value)}
-          >
-            {menu ? <X /> : <List />}
-          </button>
+          <AccountMenu />
         </div>
       </header>
       <Modal title="A little guidance." open={help} onClose={() => setHelp(false)}>
@@ -124,18 +95,10 @@ export function Header({ page }: { page: string }) {
   )
 }
 export function CoverageArtwork({ target }: { target: CoverageTarget }) {
+  const Icon = target === 'self' ? User : target === 'self_and_dependents' ? UsersThree : Users
   return (
-    <span className={`coverage-art ${target}`} aria-hidden="true">
-      {target === 'self' ? (
-        <img src={art.man} alt="" />
-      ) : target === 'self_and_dependents' ? (
-        <img src={art.family} alt="" />
-      ) : (
-        <>
-          <img src={art.father} alt="" />
-          <img src={art.mother} alt="" />
-        </>
-      )}
+    <span className="coverage-icon-art" aria-hidden="true">
+      <Icon size={25} />
     </span>
   )
 }
@@ -174,7 +137,13 @@ export function Landing({
               }}
             >
               <span className="coverage-choice-icon" aria-hidden="true">
-                {option.value === 'self' ? <User size={23} /> : option.value === 'self_and_dependents' ? <UsersThree size={23} /> : <Users size={23} />}
+                {option.value === 'self' ? (
+                  <User size={23} />
+                ) : option.value === 'self_and_dependents' ? (
+                  <UsersThree size={23} />
+                ) : (
+                  <Users size={23} />
+                )}
               </span>
               <span className="coverage-choice-copy">
                 <strong>{t(option.label)}</strong>

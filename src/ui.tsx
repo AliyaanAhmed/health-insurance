@@ -5,11 +5,15 @@ import {
   CheckCircle,
   Info,
   UserCircle,
+  User,
+  Baby,
+  GenderMale,
+  GenderFemale,
   X,
   WarningCircle,
 } from '@phosphor-icons/react'
 import { DateCalendar } from './DateCalendar'
-import { ageOf, normalizeDigits, portrait } from './health'
+import { ageOf, normalizeDigits } from './health'
 import type { Gender, Person, Relationship } from './health'
 import { useLanguage } from './language-context'
 
@@ -22,13 +26,20 @@ export function Avatar({
   relationship?: Relationship
   size?: 'small' | 'normal' | 'large'
 }) {
-  const image = portrait(person, relationship)
+  const age = person.dateOfBirth ? ageOf(person.dateOfBirth) : null
+  const Icon =
+    relationship === 'child' || (age !== null && age < 18)
+      ? Baby
+      : person.gender
+        ? User
+        : UserCircle
   return (
-    <span className={`avatar avatar-${size} ${image?.kind ?? 'neutral'}`} aria-hidden="true">
-      {image ? <img src={image.src} alt="" loading="lazy" /> : <UserCircle weight="duotone" />}
+    <span className={`avatar avatar-${size} person-icon-avatar`} aria-hidden="true">
+      <Icon weight="regular" />
     </span>
   )
 }
+
 export function Status({ complete, editing = false }: { complete: boolean; editing?: boolean }) {
   const { t } = useLanguage()
   return (
@@ -218,9 +229,6 @@ export function GenderGroup({
   onChange,
   error,
   name = 'gender',
-  child = false,
-  relationship,
-  dateOfBirth = '',
 }: {
   value: Gender
   onChange: (value: Gender) => void
@@ -230,16 +238,14 @@ export function GenderGroup({
   relationship?: Relationship
   dateOfBirth?: string
 }) {
-  const personArt = (gender: Gender) =>
-    portrait({ gender, dateOfBirth }, relationship ?? (child ? 'child' : undefined))!.src
   return (
     <ChoiceGroup
       name={name}
       label="Gender"
       className="gender-field"
       options={[
-        { value: 'male', label: 'Male', image: personArt('male') },
-        { value: 'female', label: 'Female', image: personArt('female') },
+        { value: 'male', label: 'Male', icon: <GenderMale size={24} /> },
+        { value: 'female', label: 'Female', icon: <GenderFemale size={24} /> },
       ]}
       value={value}
       onChange={(value) => onChange(value as Gender)}
@@ -261,23 +267,29 @@ export function Modal({
   title,
   children,
   className = '',
+  dismissible = true,
 }: {
   open: boolean
   onClose: () => void
   title: string
   children: ReactNode
   className?: string
+  dismissible?: boolean
 }) {
   const ref = useRef<HTMLDialogElement>(null)
   const { t } = useLanguage()
   useEffect(() => {
     if (!open || !ref.current) return
     const previous = document.activeElement as HTMLElement | null
+    const fallback = previous
+      ?.closest('.personal-inquiry-card')
+      ?.querySelector<HTMLElement>('.request-card-open')
     const dialog = ref.current
     dialog.showModal()
     return () => {
       dialog.close()
-      previous?.focus()
+      if (previous?.isConnected) previous.focus()
+      else fallback?.focus()
     }
   }, [open])
   return (
@@ -286,16 +298,22 @@ export function Modal({
       className={`modal ${className}`}
       onCancel={(event) => {
         event.preventDefault()
-        onClose()
+        if (dismissible) onClose()
       }}
       onClick={(event) => {
-        if (event.target === ref.current) onClose()
+        if (dismissible && event.target === ref.current) onClose()
       }}
       aria-labelledby={`${title.replace(/\W/g, '')}-title`}
     >
       <div className="modal-header">
         <h2 id={`${title.replace(/\W/g, '')}-title`}>{t(title)}</h2>
-        <button className="icon-button" onClick={onClose} aria-label={t('Close')} type="button">
+        <button
+          className="icon-button"
+          onClick={onClose}
+          aria-label={t('Close')}
+          type="button"
+          disabled={!dismissible}
+        >
           <X size={20} />
         </button>
       </div>

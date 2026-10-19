@@ -1,0 +1,3 @@
+id: f9d471a2-e103-4184-9665-f7d725bf5d2a
+name: Webapi/aur_medical_premium_rate/fields
+value: 'aur_medical_premium_rateid,aur_name,aur_minimum_age,aur_maximum_age,aur_reference_premium'

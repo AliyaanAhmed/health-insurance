@@ -5,13 +5,24 @@ import { useLanguage } from './language-context'
 export function PageLoader({
   label = 'Opening your inquiry',
   description = 'Your cover details, coming together.',
+  allowBack = true,
+  visualOnly = false,
+  embedded = false,
 }: {
   label?: string
   description?: string
+  allowBack?: boolean
+  visualOnly?: boolean
+  embedded?: boolean
 }) {
   const { t } = useLanguage()
+  const Heading = embedded ? 'h2' : 'h1'
   return (
-    <div className="page-loader" id="main-content" aria-busy="true">
+    <div
+      className={`page-loader${embedded ? ' page-loader-embedded' : ''}`}
+      id={embedded ? undefined : 'main-content'}
+      aria-busy="true"
+    >
       <div className="page-loader-content" role="status" aria-live="polite">
         <div className="health-loader-art" aria-hidden="true">
           <span className="health-loader-halo" />
@@ -20,22 +31,26 @@ export function PageLoader({
             <Heartbeat size={38} weight="duotone" />
           </span>
         </div>
-        <h1>
+        <Heading className={visualOnly ? 'sr-only' : undefined}>
           {t(label)}
           <span className="loader-ellipsis" aria-hidden="true">
             <i />
             <i />
             <i />
           </span>
-        </h1>
-        <p>{t(description)}</p>
-        <span className="health-loader-track" aria-hidden="true">
-          <span />
-        </span>
+        </Heading>
+        {!visualOnly && description && <p>{t(description)}</p>}
+        {!visualOnly && !embedded && (
+          <span className="health-loader-track" aria-hidden="true">
+            <span />
+          </span>
+        )}
       </div>
-      <a href="#/inquiries" className="loader-back">
-        {t('Back to inquiries')}
-      </a>
+      {allowBack && (
+        <a href="#/inquiries" className="loader-back">
+          {t('Back to requests')}
+        </a>
+      )}
     </div>
   )
 }

@@ -1,15 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import {
   ArrowLeft,
   Buildings,
   Briefcase,
-  Files,
-  CaretDown,
+  Baby,
   Check,
   CheckCircle,
   Info,
-  MagnifyingGlass,
   MapPin,
   Plus,
   ShieldCheck,
@@ -21,7 +19,6 @@ import {
 import {
   applicantErrors,
   ageOf,
-  art,
   countryCodes,
   countryName,
   coverErrors,
@@ -53,8 +50,8 @@ import {
 } from './ui'
 import { focusInvalid } from './formUtils'
 import { ReviewContent, Summary } from './Summary'
-import { DocumentUpload } from './DocumentUpload'
-import { InquiryDocuments } from './InquiryDocuments'
+import { CustomSelect } from './CustomSelect'
+import { HealthCatalogStatus } from './HealthCatalogStatus'
 
 function CountryPicker({
   value,
@@ -66,37 +63,32 @@ function CountryPicker({
   error?: string
 }) {
   const { t, locale } = useLanguage()
-  const [open, setOpen] = useState(false)
-  const [search, setSearch] = useState('')
   const countries = useMemo(
     () =>
       countryCodes
-        .map((code) => ({ code, name: countryName(code, locale), english: countryName(code) }))
-        .sort((a, b) => a.name.localeCompare(b.name, locale)),
+        .map((code) => ({
+          value: code,
+          label: countryName(code, locale),
+          keywords: countryName(code) + ' ' + code,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label, locale)),
     [locale],
-  )
-  const filtered = countries.filter((country) =>
-    `${country.name} ${country.english} ${country.code}`
-      .toLowerCase()
-      .includes(search.trim().toLowerCase()),
   )
   return (
     <div className="country-field" data-field="nationalityCode">
       <label className="field-label">{t('Nationality')}</label>
-      <button
-        type="button"
-        className="select-trigger"
-        onClick={() => {
-          setSearch('')
-          setOpen(true)
-        }}
-        aria-haspopup="dialog"
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? 'nationalityCode-error' : undefined}
-      >
-        <span>{value ? countryName(value, locale) : t('Choose your nationality')}</span>
-        <CaretDown />
-      </button>
+      <CustomSelect
+        value={value}
+        onChange={onChange}
+        options={countries}
+        label="Nationality"
+        placeholder="Choose your nationality"
+        searchable
+        searchLabel="Search countries"
+        emptyLabel="No countries match your search."
+        error={error}
+        errorId="nationalityCode-error"
+      />
       <ErrorText error={error} id="nationalityCode-error" />
       <div className="country-shortcuts">
         {['IN', 'PK', 'PH', 'EG', 'GB'].map((code) => (
@@ -111,112 +103,7 @@ function CountryPicker({
           </button>
         ))}
       </div>
-      <Modal
-        title="Choose your nationality"
-        open={open}
-        onClose={() => setOpen(false)}
-        className="country-modal"
-      >
-        <div className="search-input">
-          <MagnifyingGlass />
-          <input
-            autoFocus
-            aria-label={t('Search countries…')}
-            placeholder={t('Search countries…')}
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-        </div>
-        <div className="country-results">
-          {filtered.length ? (
-            filtered.map((country) => (
-              <button
-                className={value === country.code ? 'selected' : ''}
-                key={country.code}
-                onClick={() => {
-                  onChange(country.code)
-                  setOpen(false)
-                }}
-                type="button"
-                aria-pressed={value === country.code}
-              >
-                <span>{country.name}</span>
-                <span className="country-code">{country.code}</span>
-                {value === country.code && <Check />}
-              </button>
-            ))
-          ) : (
-            <p role="status">{t('No countries match your search.')}</p>
-          )}
-        </div>
-      </Modal>
     </div>
-  )
-}
-
-function Stepper({
-  draft,
-  stage,
-  onNavigate,
-}: {
-  draft: Draft
-  stage: Stage
-  onNavigate: (stage: Stage, group?: number) => void
-}) {
-  const { t } = useLanguage()
-  const stages = stagesFor(draft.coverageTarget)
-  const stepIcons = {
-    cover: ShieldCheck,
-    details: User,
-    family: Users,
-    documents: Files,
-    review: CheckCircle,
-  }
-  const valid: Record<Stage, boolean> = {
-    cover: Object.keys(coverErrors(draft)).length === 0,
-    details: isApplicantComplete(draft),
-    family: draft.members.length > 0 && draft.members.every(isMemberComplete),
-    documents: draft.documentsConfirmed,
-    review: false,
-  }
-  return (
-    <nav className="stepper" aria-label={t('New inquiry')}>
-      <ol>
-        {stages.map((item, index) => {
-          const StepIcon = stepIcons[item]
-          const current = stage === item
-          const canVisit =
-            index === 0 || stages.slice(0, index).every((previous) => valid[previous])
-          return (
-            <li key={item} className={`${current ? 'current' : ''} ${valid[item] ? 'done' : ''}`}>
-              <button
-                type="button"
-                onClick={() => onNavigate(item, 0)}
-                disabled={!canVisit && !current}
-                aria-current={current ? 'step' : undefined}
-              >
-                <span className="step-number">
-                  <StepIcon weight={current || valid[item] ? 'fill' : 'regular'} />
-                </span>
-                <span>
-                  <strong>
-                    {t(
-                      item === 'details' && draft.coverageTarget === 'dependents_only'
-                        ? 'Sponsor details'
-                        : stageLabels[item],
-                    )}
-                  </strong>
-                  <small>
-                    {t(current ? 'Current step' : valid[item] ? 'Completed' : 'Pending')}
-                  </small>
-                </span>
-              </button>
-              {index < stages.length - 1 && <span className="step-connector" />}
-            </li>
-          )
-        })}
-      </ol>
-    </nav>
   )
 }
 
@@ -300,18 +187,6 @@ export function Inquiry({
     }))
   const [addOpen, setAddOpen] = useState(false)
   const sponsor = draft.coverageTarget === 'dependents_only'
-  useEffect(() => {
-    if (
-      draft.members.some((member) => member.relationship === 'spouse' && member.gender !== 'female')
-    ) {
-      setDraft((current) => ({
-        ...current,
-        members: current.members.map((member) =>
-          member.relationship === 'spouse' ? { ...member, gender: 'female' } : member,
-        ),
-      }))
-    }
-  }, [draft.members, setDraft])
   const active = draft.members.find((member) => member.id === activeMemberId)
   const completeMembers = draft.members.every(isMemberComplete) && draft.members.length > 0
   const nextIncomplete = draft.members.find((member) => !isMemberComplete(member))
@@ -333,7 +208,25 @@ export function Inquiry({
     }
   }
   const updateApplicant = (key: keyof Applicant, value: string) => {
-    setDraft((current) => ({ ...current, applicant: { ...current.applicant, [key]: value } }))
+    const single = key === 'maritalStatus' && value === 'Single'
+    const removedMembers =
+      single &&
+      draft.members.some(
+        (member) => member.relationship === 'spouse' || member.relationship === 'child',
+      )
+    setDraft((current) => ({
+      ...current,
+      applicant: { ...current.applicant, [key]: value },
+      members: single
+        ? current.members.filter(
+            (member) => member.relationship !== 'spouse' && member.relationship !== 'child',
+          )
+        : current.members,
+    }))
+    if (removedMembers) {
+      setActiveMemberId(null)
+      notify('Spouse and child entries were cleared for Single marital status.')
+    }
     clearError(key)
   }
   const validateApplicantField = (key: string) => {
@@ -344,7 +237,20 @@ export function Inquiry({
     setDraft((current) => ({
       ...current,
       members: current.members.map((member) =>
-        member.id === activeMemberId ? { ...member, [key]: value, saved: false } : member,
+        member.id === activeMemberId
+          ? {
+              ...member,
+              confirmedDetails: member.saved
+                ? {
+                    fullName: member.fullName,
+                    dateOfBirth: member.dateOfBirth,
+                    gender: member.gender,
+                  }
+                : member.confirmedDetails,
+              [key]: value,
+              saved: false,
+            }
+          : member,
       ),
     }))
     clearError(key)
@@ -364,6 +270,11 @@ export function Inquiry({
     onNavigate('family', 0)
   }
   const addMember = (relationship: Relationship) => {
+    if (
+      draft.applicant.maritalStatus === 'Single' &&
+      (relationship === 'spouse' || relationship === 'child')
+    )
+      return
     const id = crypto.randomUUID()
     setDraft((current) => ({
       ...current,
@@ -374,7 +285,7 @@ export function Inquiry({
           relationship,
           fullName: '',
           dateOfBirth: '',
-          gender: relationship === 'spouse' ? 'female' : '',
+          gender: '',
           saved: false,
         },
       ],
@@ -423,7 +334,7 @@ export function Inquiry({
         return
       }
       if (group < 2) onNavigate('details', group + 1)
-      else if (draft.coverageTarget === 'self') onNavigate('documents', 0)
+      else if (draft.coverageTarget === 'self') onNavigate('review', 0)
       else onNavigate('family', 0)
     } else if (stage === 'family') {
       if (active) {
@@ -436,7 +347,16 @@ export function Inquiry({
           ...current,
           members: current.members.map((member) =>
             member.id === active.id
-              ? { ...member, fullName: member.fullName.trim(), saved: true }
+              ? {
+                  ...member,
+                  fullName: member.fullName.trim(),
+                  saved: true,
+                  confirmedDetails: {
+                    fullName: member.fullName.trim(),
+                    dateOfBirth: member.dateOfBirth,
+                    gender: member.gender,
+                  },
+                }
               : member,
           ),
         }))
@@ -444,10 +364,7 @@ export function Inquiry({
         notify('Member details saved.')
       } else if (!draft.members.length) setAddOpen(true)
       else if (nextIncomplete) setActiveMemberId(nextIncomplete.id)
-      else onNavigate('documents', 0)
-    } else if (stage === 'documents') {
-      setDraft((current) => ({ ...current, documentsConfirmed: true }))
-      onNavigate('review', 0)
+      else onNavigate('review', 0)
     } else {
       const cover = coverErrors(draft)
       if (Object.keys(cover).length) {
@@ -477,10 +394,6 @@ export function Inquiry({
             ? 'Save all member details before continuing.'
             : 'Add at least one family member to continue.',
         })
-        return
-      }
-      if (!draft.documentsConfirmed) {
-        onNavigate('documents', 0)
         return
       }
       onCreate()
@@ -537,23 +450,15 @@ export function Inquiry({
           ? 'Add person'
           : nextIncomplete
             ? 'Open next member'
-            : 'Continue to documents'
+            : 'Continue to review'
       : stage === 'review'
-        ? 'Create Inquiry'
+        ? 'Submit'
         : stage === 'documents'
           ? 'Continue to review'
           : 'Continue'
   const hasErrors = Object.values(errors).some(Boolean)
   return (
     <div className="inquiry-layout">
-      <div className="inquiry-navigation">
-        <div className="breadcrumb">
-          <a href="#/">{t('Health insurance')}</a>
-          <span>/</span>
-          <span>{t('New inquiry')}</span>
-        </div>
-        <Stepper draft={draft} stage={stage} onNavigate={onNavigate} />
-      </div>
       <main className="inquiry-main" id="main-content">
         <div
           className={`inquiry-intro ${stage === 'family' ? 'family-intro' : ''}`}
@@ -566,7 +471,7 @@ export function Inquiry({
                   ? 'Family'
                   : stage === 'review'
                     ? 'Ready when you are.'
-                    : 'New inquiry',
+                    : 'New request',
               )}
             </p>
             <h1 tabIndex={-1} id="step-heading">
@@ -582,11 +487,13 @@ export function Inquiry({
             {t('Your family’s cover will include the people you add in the next step.')}
           </Hint>
         )}
+        <HealthCatalogStatus />
         <form
           autoComplete="off"
           noValidate
           onSubmit={(event) => {
             event.preventDefault()
+            if (stage === 'review') return
             next()
           }}
         >
@@ -816,6 +723,9 @@ export function Inquiry({
                           {member.fullName.trim().split(/\s/)[0] ||
                             t(relationshipLabels[member.relationship])}
                         </strong>
+                        <small className="member-relationship">
+                          {t(relationshipLabels[member.relationship])}
+                        </small>
                         <Status
                           complete={member.id !== activeMemberId && isMemberComplete(member)}
                           editing={member.id === activeMemberId}
@@ -855,9 +765,7 @@ export function Inquiry({
                         {t('Remove')}
                       </button>
                     </div>
-                    <div
-                      className={`member-fields ${active.relationship === 'spouse' ? 'spouse-fields' : ''}`}
-                    >
+                    <div className="member-fields">
                       <TextField
                         id="member-fullName"
                         name="fullName"
@@ -877,19 +785,17 @@ export function Inquiry({
                         error={errors.dateOfBirth}
                         onBlur={() => validateMemberField('dateOfBirth')}
                       />
-                      {active.relationship !== 'spouse' && (
-                        <GenderGroup
-                          value={active.gender}
-                          relationship={active.relationship}
-                          dateOfBirth={active.dateOfBirth}
-                          onChange={(value) => updateMember('gender', value)}
-                          error={errors.gender}
-                          child={
-                            active.relationship === 'child' ||
-                            (ageOf(active.dateOfBirth) !== null && ageOf(active.dateOfBirth)! < 18)
-                          }
-                        />
-                      )}
+                      <GenderGroup
+                        value={active.gender}
+                        relationship={active.relationship}
+                        dateOfBirth={active.dateOfBirth}
+                        onChange={(value) => updateMember('gender', value)}
+                        error={errors.gender}
+                        child={
+                          active.relationship === 'child' ||
+                          (ageOf(active.dateOfBirth) !== null && ageOf(active.dateOfBirth)! < 18)
+                        }
+                      />
                     </div>
                   </div>
                 ) : (
@@ -922,6 +828,10 @@ export function Inquiry({
                             className="button"
                             type="button"
                             key={relationship}
+                            disabled={
+                              draft.applicant.maritalStatus === 'Single' &&
+                              (relationship === 'spouse' || relationship === 'child')
+                            }
                             onClick={() => addMember(relationship)}
                           >
                             <Plus size={17} />
@@ -934,14 +844,6 @@ export function Inquiry({
                 )}
               </>
             )}
-            {stage === 'documents' && (
-              <DocumentUpload
-                documents={draft.documents ?? []}
-                onChange={(documents) =>
-                  setDraft((current) => ({ ...current, documents, documentsConfirmed: false }))
-                }
-              />
-            )}
             {stage === 'review' && (
               <>
                 {draft.applicant.salaryBand === 'pending_4000' && (
@@ -952,10 +854,6 @@ export function Inquiry({
                   </Hint>
                 )}
                 <ReviewContent draft={draft} onEdit={onNavigate} onEditMember={openMember} />
-                <InquiryDocuments
-                  record={{ id: '', draft, createdAt: '', documents: draft.documents }}
-                  onEdit={() => onNavigate('documents', 0)}
-                />
               </>
             )}
           </div>
@@ -972,25 +870,27 @@ export function Inquiry({
               )}
               <span>{t(stageLabels[stage])}</span>
             </div>
-            <PrimaryButton type="submit">
+            <PrimaryButton
+              type={stage === 'review' ? 'button' : 'submit'}
+              onClick={stage === 'review' ? next : undefined}
+            >
               {stage === 'family' && active && <CheckCircle weight="fill" size={21} />}
               {t(primaryLabel)}
             </PrimaryButton>
           </div>
         </form>
       </main>
-      <Summary
-        draft={draft}
-        activeMemberId={stage === 'family' ? activeMemberId : null}
-        onEdit={onNavigate}
-        onEditMember={openMember}
-        onChangeCoverage={onChangeCoverage}
-      />
+      <Summary draft={draft} onEdit={onNavigate} onChangeCoverage={onChangeCoverage} />
       <Modal title="Who would you like to add?" open={addOpen} onClose={() => setAddOpen(false)}>
         <p className="modal-description">{t('Choose their relationship to you.')}</p>
         <div className="relationship-options">
-          {(['spouse', 'child', 'parent', ...(sponsor ? ['other'] : [])] as Relationship[]).map(
-            (relationship) => {
+          {(['spouse', 'child', 'parent', ...(sponsor ? ['other'] : [])] as Relationship[])
+            .filter(
+              (relationship) =>
+                draft.applicant.maritalStatus !== 'Single' ||
+                (relationship !== 'spouse' && relationship !== 'child'),
+            )
+            .map((relationship) => {
               const spouseExists =
                 relationship === 'spouse' &&
                 draft.members.some((member) => member.relationship === 'spouse')
@@ -1002,20 +902,12 @@ export function Inquiry({
                   onClick={() => addMember(relationship)}
                 >
                   <span className="relationship-art" aria-hidden="true">
-                    {relationship === 'parent' ? (
-                      <>
-                        <img src={art.father} alt="" />
-                        <img src={art.mother} alt="" />
-                      </>
-                    ) : relationship === 'child' ? (
-                      <>
-                        <img src={art.boy} alt="" />
-                        <img src={art.girl} alt="" />
-                      </>
-                    ) : relationship === 'spouse' ? (
-                      <img src={art.woman} alt="" />
+                    {relationship === 'child' ? (
+                      <Baby size={25} />
+                    ) : relationship === 'parent' ? (
+                      <Users size={25} />
                     ) : (
-                      <User size={30} />
+                      <User size={25} />
                     )}
                   </span>
                   <span>
@@ -1028,8 +920,7 @@ export function Inquiry({
                   <Plus size={20} />
                 </button>
               )
-            },
-          )}
+            })}
         </div>
       </Modal>
     </div>

@@ -1177,6 +1177,13 @@ input[aria-invalid='true'],
 .member-tile .status {
   font-size: 10px;
 }
+.member-tile .member-relationship {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--health-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
 .member-tile .status svg {
   width: 13px;
   height: 13px;
@@ -3425,8 +3432,6 @@ progress::-moz-progress-bar {
 .relationship-options > button > span:not(.relationship-art) { align-self: center; }
 .gender-field .option, .member-fields .gender-field .option { align-items: center; }
 .gender-field .option-copy { align-self: center; }
-.member-fields.spouse-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-@media (max-width: 767px) { .member-fields.spouse-fields { grid-template-columns: minmax(0, 1fr); } }
 
 /* Coverage actions: compact icon tile beside the label. */
 .landing .coverage-choice { flex-direction: row; align-items: flex-start; justify-content: flex-start; min-height: 126px; gap: 12px; padding: 18px 28px 18px 14px; }
@@ -3499,3 +3504,15 @@ html[data-route-motion='crossfade'] .detail-tab-panel { animation: none; }
 /* Home fills the available viewport without reserving an unused scrollbar strip. */
 html:has(.landing) { scrollbar-gutter: auto; }
 .landing { width: 100%; max-width: none; }
+/* Let coverage actions follow their copy instead of keeping a fixed empty floor. */
+.landing .coverage-choice { min-height: 0; height: auto; }
+/* Keep comfortable outer gutters when the three-column form fills a laptop viewport. */
+@media (min-width: 1024px) and (max-width: 1536px) {
+  .inquiry-layout { padding-inline: clamp(40px, 4.5vw, 72px); }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .inquiry-layout { padding-inline: 36px; }
+}
+@media (max-width: 767px) {
+  .inquiry-layout { padding-inline: clamp(20px, 5vw, 28px); }
+}

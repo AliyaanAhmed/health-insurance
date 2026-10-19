@@ -1,10 +1,10 @@
 ﻿# InsureAI Health - Technical and Design Guide
 
-Last updated: October 15, 2026.
+Last updated: October 16, 2026.
 
 ## 1. Project scope
 
-InsureAI Health is a responsive health-insurance inquiry SPA built for Microsoft Power Pages code sites. This version is a local frontend prototype: it captures cover, applicant/sponsor and family information, supports review, and prepares an inquiry preview. Dataverse, real authentication, insurer pricing, policy purchase and production SMS are not integrated.
+InsureAI Health is a responsive health-insurance request SPA built for Microsoft Power Pages code sites. The current implementation captures cover, applicant/sponsor and family information, retrieves Dataverse reference rates, calculates per-person premiums, and saves/retrieves contacts and health quotes through the portal Web API. Required API settings are prepared locally; the existing anonymous web-role permissions are retained for this internal POC. Authentication identity, policy purchase and production SMS are not integrated. The current Dataverse section at the end supersedes earlier prototype implementation notes.
 
 The existing Motor Insurance site is a separate project. This application has its own source and Power Pages configuration.
 
@@ -340,3 +340,31 @@ The new view uses Applicant information, not driver/vehicle fields. The existing
 The active create path no longer mounts Verification. Draft adds documents and documentsConfirmed; Stage adds documents. DocumentUpload.tsx supplies health reference tiles, accessible file selection, drag/drop, count/type/size/duplicate checks, preview and removal. FilePreview.tsx owns temporary image/PDF Blob URLs and download links. InquiryDocument optionally holds a File; record creation copies draft attachments to the new record. InquiryDocuments now previews real local files when present, retaining explicit illustrative previews for sample metadata. The final review reuses it with an Edit action. No packages were added. Original PNG references are bundled as supplied.
 
 The create loader and record-opening loader are coordinated to avoid a repeated delay after creation. The new record opens directly in its Details tab, with its own files available for this session. Older browser tests describing OTP and pre-document step ordering require updates before reuse.
+
+## 22. Shared custom dropdowns
+
+CustomSelect.tsx and CustomSelect.css replace native select menus with a themed popover/listbox primitive. The inquiry table coverage filter uses its compact mode; nationality uses searchable mode and retains quick choices. Options support secondary helper text, selected checkmarks, active highlight, arrow navigation, Enter/Escape, typeahead for non-search lists and localized country search. Browser Popover API avoids clipped menus inside the table; positioning respects viewport edges and RTL. No new package was installed.
+
+## 23. Current minimal customer UI (latest requirements)
+
+This revision supersedes the earlier full inquiry table/detail and document-step descriptions. AccountMenu.tsx owns a native-popover account menu with a local preview profile and a My Inquiries link. The navbar no longer contains that link directly.
+
+InquiryList.tsx now renders a small grid of inquiry cards with product, coverage and member information. One sample is seeded; all user-created session records remain available. InquiryView.tsx has been replaced with a small read-only InquirySummaryCard and return link. App.tsx hides the global navbar on an inquiry summary route. The old FamilyTree.tsx, PremiumBreakdown.tsx and InquiryDocuments.tsx components were deleted.
+
+Summary.tsx owns the shared compact card and relationship-count formatter. Active creation stages exclude Documents, and Inquiry.tsx no longer renders a stepper or upload UI. The two-column layout is form plus 300px answer summary (270px tablet, stacked mobile). User-avatar and gender controls now use Phosphor icons; no new image assets/packages were added. SimpleExperience.css is loaded after older style sheets and owns this revised layout. DocumentUpload.tsx/FilePreview.tsx and supplied reference assets are retained but not part of the current flow.
+
+The preview account is static frontend data until authentication integration; session inquiries are still local and disappear on refresh. No policy-purchase quota or backend enforcement is implied by the small card layout.
+
+## 24. Inquiry summary modal
+
+InquiryView.tsx now wraps the shared compact summary in Modal rather than rendering a standalone page. InquiryList calls App-owned selection state when a card is clicked; the URL/card list remain stable. Creation navigates to My Inquiries and opens the new record in this same modal. Native dialog provides focus containment, Escape and backdrop/close dismissal. No new dependency.
+
+PremiumRange.tsx is the presentation owner for the annual estimated AED range in the create-side quote card. It has three clearly illustrative coverage fixtures, localized number formatting and an expandable explanation. The range changes only with coverage selection. No actual premium calculation, insurer API or eligibility algorithm is implemented.
+# Current Dataverse integration
+
+The integration described in [docs/health-dataverse-integration.md](docs/health-dataverse-integration.md) supersedes earlier statements about mock premiums, local-only requests or pending Dataverse work. Existing React/TypeScript/Vite/font packages are retained; no new package was added.
+
+New modules: `healthPricing.ts` (typed customer JSON/rate matching/totals), `powerPagesApi.ts` (same-origin authenticated portal API), `useHealthCatalog.ts`, `healthIntegrationContext.ts`, `HealthCatalogStatus.tsx`. `PremiumRange.tsx` now shows a single live **AED** reference premium. `App.tsx` coordinates contact reuse/create and quote persistence. Gross and VAT-inclusive whole-unit charge are saved with the complete JSON. The final charge always rounds up after VAT. Salary labels remain AED.
+
+Required Web API field settings are prepared locally, not applied to the live site. The existing anonymous POC permissions are retained as confirmed by the user; the account menu remains a preview identity. No browser captures or live contact/quote writes were performed for this integration.
+
