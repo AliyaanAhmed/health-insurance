@@ -387,7 +387,7 @@ adx_webfile:
   IsDeleted: true
 - RecordId: 23733aac-ee92-46f7-8a9a-f5a89ee6055c
   DisplayName: 23733aac-ee92-46f7-8a9a-f5a89ee6055c
-  CheckSum: 77ac489b9f40355c8e7ca8d71591b5e3e4bafadc36e7dcaead567e235d8760bb
+  CheckSum: ab2ad9e63a614dde1fd45ea72eb990c179ecbdb868724eb8e3c2ab73e278bb60
   IsDeleted: false
 - RecordId: 249f5410-25f6-4da8-b829-88f8dd6d321c
   DisplayName: 249f5410-25f6-4da8-b829-88f8dd6d321c
@@ -598,7 +598,7 @@ adx_webpage:
   IsDeleted: false
 - RecordId: cce63986-c685-4c98-8281-d4149f76e795
   DisplayName: cce63986-c685-4c98-8281-d4149f76e795
-  CheckSum: c569fb71cdd00e72826dc8365aef9fdd24c3bd8f9ee3aa689bb93bc480497cd0
+  CheckSum: dee9d721ba756310453087fd4748bb33f69eb3b2ca99cf47083b825e2513f217
   IsDeleted: false
 - RecordId: eb4d3e6c-ae2b-44f7-93d8-87c5bb1244c3
   DisplayName: eb4d3e6c-ae2b-44f7-93d8-87c5bb1244c3
@@ -759,7 +759,7 @@ annotation:
   IsDeleted: true
 - RecordId: 23733aac-ee92-46f7-8a9a-f5a89ee6055c
   DisplayName: index.html
-  CheckSum: 23598fd5f7da1b5ddcbe55acacdae807ac6a51a4b6409cc166e7bd23896f1dae
+  CheckSum: 05b2a84f1aceab3077a538d37b3a53c449e1c83f9ef23c059fe6031c13faf227
   IsDeleted: false
 - RecordId: 249f5410-25f6-4da8-b829-88f8dd6d321c
   DisplayName: portalbasictheme.css

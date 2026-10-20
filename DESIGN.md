@@ -261,3 +261,5 @@ Plan artwork refinement: use the user-supplied transparent PNG shield icons (per
 Plan icon correction: use the app's Phosphor outline icons instead of PNG artwork: Shield (Basic), StackSimple (Standard), ShieldStar (Premium), each 48px and centered on a transparent background. All card text remains centered; original asset files are retained but not imported by the plan cards.
 
 Plan icon spacing refinement: use a 68px circular mint icon surface (white on the selected mint card), 36px Phosphor icon and 10px icon-to-title gap. Reduce card minimum height from 252px to 216px; retain centered content and responsive sizing. This supersedes the transparent icon surface preference.
+
+Plan icon sizing: 30×30px icons inside 55×55px circular backgrounds on every viewport, per October 20 user specification. This supersedes the preceding 36px/68px sizes.

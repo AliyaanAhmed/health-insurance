@@ -1115,8 +1115,8 @@
 .plan-cards > legend { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .plan-cards .choice-options { gap: 14px; }
 .plan-cards .option { position: relative; flex-direction: column; align-items: center; justify-content: flex-start; gap: 10px; min-height: 216px; padding: 20px 16px 16px; text-align: center; border-color: var(--health-border); background: var(--health-surface); border-radius: 14px; transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease; }
-.plan-cards .option-icon { display: grid; place-items: center; width: 68px; height: 68px; flex-shrink: 0; border-radius: 50%; background: var(--health-primary-soft); }
-.plan-cards .option-icon svg { width: 36px; height: 36px; color: var(--health-primary); }
+.plan-cards .option-icon { display: grid; place-items: center; width: 55px; height: 55px; flex-shrink: 0; border-radius: 50%; background: var(--health-primary-soft); }
+.plan-cards .option-icon svg { width: 30px; height: 30px; color: var(--health-primary); }
 .plan-cards .option-copy { flex: 1; width: 100%; gap: 8px; grid-template-rows: auto 1fr auto; text-align: center; }
 .plan-cards .option-copy strong { font: 700 15px/1.4 var(--font-heading); }
 .plan-cards .option-copy > .option-description { padding: 0; color: var(--health-muted); background: none; font: 400 12px/1.55 var(--font-body); }
@@ -1133,7 +1133,7 @@
 }
 @media (max-width: 440px) {
   .plan-cards .option { flex-direction: column; align-items: center; min-height: 206px; padding: 20px 14px 14px; }
-  .plan-cards .option-icon { width: 68px; height: 68px; align-self: center; }
+  .plan-cards .option-icon { width: 55px; height: 55px; align-self: center; }
   .plan-cards .option-copy { display: grid; flex: 1; gap: 6px; padding-inline-end: 0; }
   .plan-cards .choice-selected-label { top: 6px; inset-inline-start: 7px; font-size: 9px; }
 }
