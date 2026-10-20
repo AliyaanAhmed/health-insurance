@@ -229,3 +229,27 @@ Family member tiles show the relationship below the name. KYC member navigation 
 This supersedes the earlier female-only spouse rule. Spouses use the same required Male/Female GenderGroup and responsive three-field editor as other members. New spouses start with no gender selected. No effect normalizes or overwrites a saved spouse gender. KYC continues using the covered person's saved gender and DOB; existing records are not rewritten or inferred from the applicant's gender.
 
 KYC navigation refinement: member/household/review buttons now wrap and grow to fill each available row, rather than remaining content-width in a horizontal scroller. Long names wrap within each button. Completed sections use solid theme teal with white text; completion tick icons are removed. Answered remains available to screen readers. The current step keeps its selection outline independently of completion. This supersedes the earlier completed mint/checkmark treatment.
+
+## TPA network step — October 19, 2026
+
+All create paths include TPA before Review (after Family for dependent covers, after Your details for Just me). The read-only provider is NextCare. The required CustomSelect shows labels only: Basic Network (choice 1, no adjustment), Standard Network (choice 2, +10%), Premium Network (choice 3, +20%). No network is preselected. Shared tpaNetworks in health.ts owns labels/choice values/percentages.
+
+healthPricing.ts applies the selected adjustment once to the combined reference premium, rounds adjusted gross to currency cents, then calculates plan VAT and rounds the final charge upward to a whole AED. Original per-person reference premiums are retained. Both animated range endpoints derive from adjusted gross (90%–100%). Sidebar answers, final review and saved request summary show provider/network. Existing records lacking TPA remain readable with missing values rather than assuming a selected network.
+
+TPA network presentation refinement: replace CustomSelect with the canonical ChoiceGroup, using three equal compact selection boxes on desktop and stacked boxes on narrow screens. Only network labels are shown; selected state uses teal border and mint background. NextCare remains fixed in a compact provider strip above the options. Numeric choices, adjustments, validation, premium animation and persistence are unchanged.
+
+TPA compact field refinement supersedes the provider strip: show the read-only prepopulated NextCare TextField beside the network ChoiceGroup in one desktop row. Network boxes are 50px minimum height, 12px labels and 8px gaps. On mobile the two fields stack, while all three compact network choices remain in one row with wrapping labels. No provider icon/header or divider is rendered.
+
+TPA row placement refinement: TPA TextField and TPA Network ChoiceGroup occupy separate full-width rows at every viewport. Network choices remain three compact boxes in one row. This supersedes the desktop side-by-side field layout.
+
+Saved request header now shows Network adjustment immediately before Gross premium and Premium to be charged, using the same numeric type size. The existing cover-details adjustment remains visible. On narrow screens the pricing area wraps below the cover identity; on phones the adjustment precedes the paired monetary values on its own row.
+
+TPA provider input width refinement: keep the two separate rows, but constrain the read-only NextCare field to 274px maximum (100% on narrower containers), matching the supplied reference. The network choices retain their full-row layout.
+
+## Plans and request progress — October 20, 2026
+
+The former TPA creation step is presented as Plans, with Continue to Plans navigation and one ChoiceGroup only. The fixed NextCare value remains internal and is still sent to Dataverse. Plan tiles show Basic Network 0%, Standard Network 10%, Premium Network 20%; selection retains shared keyboard/focus and selected border/background behavior. Customer JSON premium.networkAdjustmentAmount already stores the added amount before VAT, derived from the original reference subtotal, and is now displayed in saved request summaries without repricing. Sidebar/review labels use Plans rather than TPA.
+
+RequestProgress.tsx owns the read-only six-stage tracker below the saved summary header. Exact status mappings follow the October 20 user table. Current and prior stages are teal; current has a solid marker and aria-current=step; upcoming stages are neutral. The tracker uses an ordered list with descriptive icons, a current-stage label and no navigation buttons. Desktop shows connected horizontal stages; narrow screens use a connected vertical list. Unknown statuses highlight no stage rather than implying completion. It reflects the latest loaded portal status and does not promise live updates.
+
+Plans card refinement: hide the repeated field legend visually while preserving its accessible group label. Each native radio card shows a compact shield icon, network name, and percentage adjustment badge. Selected cards use mint, solid teal icon tile and a small selection marker; hover adds restrained elevation. No invented coverage benefits or recommended tier. Three desktop cards become compact horizontal cards on phones; reduced motion disables hover translation.

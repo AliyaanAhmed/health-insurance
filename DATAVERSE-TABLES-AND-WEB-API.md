@@ -283,3 +283,13 @@ A 403 commonly points to authentication, table permission, scope, or Dataverse p
 - [`src/powerPagesApi.ts`](src/powerPagesApi.ts): Web API helpers, table endpoints, CRUD payloads, and query examples.
 - [`.powerpages-site/site-settings`](.powerpages-site/site-settings): Current Motor site setting records, including Web API table/field allowlists.
 - [`POWER-PAGES-SPA-GUIDE.md`](POWER-PAGES-SPA-GUIDE.md): Overall SPA, Power Pages, deployment, tables, and flow architecture.
+
+## TPA fields and premium adjustment
+
+New quote columns: aur_tpa (Text), aur_tpa_network (Choice: Basic Network = 1, Standard Network = 2, Premium Network = 3). Both are included in Webapi/aur_quotes/fields and quote GET/POST operations.
+
+Creation captures NextCare and a required numeric network choice before Review. JSON persists the provider/choice plus original reference subtotal, adjustment percentage/amount and adjusted gross/VAT/total. Basic adds 0%, Standard 10%, Premium 20% to the combined member reference premiums before VAT. Adjusted gross rounds to currency cents; final VAT-inclusive charge rounds upward to a whole AED. The displayed range is 90%–100% of adjusted gross. Existing quote summaries read saved values without applying current pricing again.
+
+## Plan provider column correction — October 20, 2026
+
+Final user confirmation retains aur_tpa (Text) for NextCare and aur_tpa_network with numeric choices 1/2/3. Quote creation, retrieval and the Web API field allowlist use these existing columns; dga_tpa is not used. JSON still stores tpa and tpaNetwork; saved summaries and final review show Plan name (NextCare) and Network separately. Historical customer JSON provides the provider fallback when aur_tpa is empty.

@@ -1009,6 +1009,8 @@
 .request-summary-dialog .modal-header { margin-bottom: 20px; align-items: center; }
 .request-summary-dialog .modal-header h2 { font-size: 22px; letter-spacing: -.5px; }
 .request-summary-body { display: grid; gap: 18px; }
+.request-summary-disclaimer { display: flex; align-items: flex-start; gap: 7px; grid-column: 1 / -1; max-width: 400px; margin: 0; color: var(--health-muted); font: 400 10px/1.6 var(--font-body); }
+.request-summary-disclaimer > svg { flex-shrink: 0; margin-top: 1px; color: var(--health-primary); }
 .request-summary-cover { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid #d7e9e1; border-radius: 15px; background: linear-gradient(115deg, #eaf7ef, #f7fbf9); }
 .request-summary-emblem { display: grid; place-items: center; flex-shrink: 0; width: 42px; height: 46px; color: var(--health-primary); }
 .request-summary-cover-copy { display: grid; gap: 3px; min-width: 0; }
@@ -1035,15 +1037,19 @@
 .request-summary-cover > .request-summary-overview { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .request-summary-cover-copy { display: grid; gap: 4px; min-width: 0; }
 .request-summary-cover-copy .request-summary-count { margin: 3px 0 0; white-space: normal; }
-.request-summary-prices { display: grid; grid-template-columns: auto auto; align-items: start; gap: 18px; padding-inline-start: 20px; border-inline-start: 1px solid #d2e5da; }
+.request-summary-prices { display: grid; grid-template-columns: repeat(3, auto); align-items: start; gap: 18px; padding-inline-start: 20px; border-inline-start: 1px solid #d2e5da; }
 .request-summary-prices > div { display: grid; gap: 6px; min-width: 0; }
 .request-summary-prices > div > span { font-size: 10px; color: var(--health-muted); line-height: 1.5; }
 .request-summary-prices strong { font: 700 17px/1.4 var(--font-heading); color: var(--health-primary); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .request-summary-prices .request-summary-gross strong { color: #426f61; }
 .request-summary-prices .request-summary-charge > span { color: #216b58; }
-@media (max-width: 660px) {
+@media (max-width: 760px) {
  .request-summary-cover { grid-template-columns: 1fr; gap: 15px; }
- .request-summary-prices { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-inline-start: 0; border-inline-start: 0; padding-top: 14px; border-top: 1px solid #d2e5da; }
+ .request-summary-prices { grid-template-columns: repeat(3, minmax(0, 1fr)); padding-inline-start: 0; border-inline-start: 0; padding-top: 14px; border-top: 1px solid #d2e5da; }
+}
+@media (max-width: 540px) {
+ .request-summary-prices { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+ .request-summary-network { grid-column: 1 / -1; }
 }
 @media (max-width: 560px) {
  .personal-summary-modal.request-summary-dialog { width: calc(100vw - 24px); padding: 18px; border-radius: 20px; }
@@ -1063,3 +1069,74 @@
 
 .inline-relationships > button:disabled { color: #98a59f; background: #f2f5f3; border-color: #dfe6e2; box-shadow: none; cursor: not-allowed; opacity: .65; transform: none; }
 .inline-relationships > button:disabled svg { color: inherit; }
+
+.tpa-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; min-width: 0; }
+.tpa-network-choices { margin: 0; min-width: 0; }
+.tpa-network-choices .choice-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.tpa-network-choices .option { min-height: 90px; padding: 16px 12px; justify-content: center; text-align: center; border-radius: 12px; }
+.tpa-network-choices .option-copy strong { font-size: 14px; line-height: 1.4; }
+.tpa-network-choices .option-copy > span { color: var(--health-muted); font: 600 16px/1.4 var(--font-heading); }
+.tpa-network-choices .option.selected .option-copy > span { color: var(--health-primary); }
+.tpa-network-choices .option.selected { border-color: var(--health-primary); background: var(--health-primary-soft); box-shadow: inset 0 0 0 1px var(--health-primary); }
+@media (max-width: 600px) {
+  .tpa-fields { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .tpa-network-choices .option { padding: 10px 6px; }
+}
+@media (max-width: 440px) {
+  .tpa-network-choices .choice-options { grid-template-columns: minmax(0, 1fr); gap: 9px; }
+  .tpa-network-choices .option { min-height: 58px; padding: 12px; }
+  .tpa-network-choices .option-copy { display: flex; flex: 1; flex-direction: row; justify-content: space-between; align-items: center; text-align: start; }
+}
+
+.request-progress { padding: 16px; border: 1px solid var(--health-border); border-radius: 14px; }
+.request-progress-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.request-progress-heading h3 { margin: 0; font: 650 13px/1.5 var(--font-body); color: var(--health-ink); }
+.request-progress-heading > span { color: var(--health-primary); font: 550 10px/1.5 var(--font-body); background: var(--health-primary-soft); border-radius: 6px; padding: 4px 8px; }
+.request-progress ol { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; padding: 0; margin: 0; list-style: none; }
+.request-progress li { position: relative; display: flex; flex-direction: column; align-items: center; gap: 9px; min-width: 0; padding: 0 4px; text-align: center; color: var(--health-muted); }
+.request-progress li:not(:first-child)::before { content: ''; position: absolute; inset-inline-end: 50%; top: 17px; width: 100%; height: 2px; background: var(--health-border); }
+.request-progress li.reached::before, .request-progress li.current::before { background: var(--health-primary); }
+.request-progress-marker { position: relative; z-index: 1; display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--health-border); border-radius: 50%; background: var(--health-surface); }
+.request-progress .reached, .request-progress .current { color: var(--health-primary); }
+.request-progress .reached .request-progress-marker { background: var(--health-primary-soft); border-color: var(--health-primary); }
+.request-progress .current .request-progress-marker { background: var(--health-primary); border-color: var(--health-primary); color: var(--health-surface); box-shadow: 0 0 0 4px var(--health-primary-soft); }
+.request-progress-label { font: 500 10px/1.5 var(--font-body); overflow-wrap: anywhere; }
+.request-progress .current .request-progress-label { font-weight: 750; }
+@media (max-width: 600px) {
+  .request-progress ol { grid-template-columns: minmax(0, 1fr); }
+  .request-progress li { flex-direction: row; text-align: start; gap: 12px; padding: 0 0 16px; }
+  .request-progress li:last-child { padding-bottom: 0; }
+  .request-progress li:not(:first-child)::before { inset-inline-start: 17px; inset-inline-end: auto; top: -16px; width: 2px; height: 34px; }
+  .request-progress-label { font-size: 11px; }
+  .request-progress-marker { flex-shrink: 0; }
+}
+
+/* Plan cards retain native radio behavior and the shared focus treatment. */
+.plan-cards > legend { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.plan-cards .choice-options { gap: 14px; }
+.plan-cards .option { position: relative; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 16px; min-height: 156px; padding: 19px; text-align: start; border-color: var(--health-border); background: var(--health-surface); border-radius: 16px; transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease; }
+.plan-cards .option-icon { display: grid; place-items: center; width: 42px; height: 42px; flex-shrink: 0; border-radius: 12px; background: var(--health-primary-soft); color: var(--health-primary); }
+.plan-cards .option-copy { width: 100%; gap: 10px; }
+.plan-cards .option-copy strong { font: 700 15px/1.4 var(--font-heading); }
+.plan-cards .option-copy > span { justify-self: start; padding: 4px 8px; border-radius: 6px; color: var(--health-muted); background: var(--health-canvas); font: 500 11px/1.5 var(--font-body); }
+.plan-cards .option:hover { border-color: var(--health-primary); box-shadow: 0 7px 18px rgb(16 59 54 / 8%); transform: translateY(-2px); }
+.plan-cards .option.selected { border-color: var(--health-primary); background: var(--health-primary-soft); box-shadow: inset 0 0 0 1px var(--health-primary); }
+.plan-cards .option.selected .option-icon { background: var(--health-primary); color: var(--health-surface); }
+.plan-cards .option.selected .option-copy > span { color: var(--health-primary); background: var(--health-surface); }
+.plan-cards .option::after { content: ''; position: absolute; top: 19px; inset-inline-end: 18px; width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--health-control-border); }
+.plan-cards .option.selected::after { background: var(--health-primary); border-color: var(--health-primary); box-shadow: 0 0 0 3px var(--health-surface); }
+@media (max-width: 600px) {
+  .plan-cards .choice-options { gap: 9px; }
+  .plan-cards .option { padding: 14px 10px; min-height: 150px; gap: 13px; }
+  .plan-cards .option-copy strong { font-size: 13px; }
+  .plan-cards .option::after { top: 15px; inset-inline-end: 11px; }
+}
+@media (max-width: 440px) {
+  .plan-cards .option { flex-direction: row; align-items: center; min-height: 80px; padding: 14px; }
+  .plan-cards .option-copy { display: grid; flex: 1; gap: 6px; padding-inline-end: 18px; }
+  .plan-cards .option::after { top: calc(50% - 5px); inset-inline-end: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plan-cards .option { transition: none; }
+  .plan-cards .option:hover { transform: none; }
+}

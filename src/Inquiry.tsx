@@ -33,6 +33,8 @@ import {
   stagesFor,
   statusOptions,
   visaOptions,
+  tpaNetworks,
+  tpaErrors,
 } from './health'
 import type { Applicant, Draft, Errors, Member, Relationship, Stage } from './health'
 import { useLanguage } from './language-context'
@@ -334,7 +336,7 @@ export function Inquiry({
         return
       }
       if (group < 2) onNavigate('details', group + 1)
-      else if (draft.coverageTarget === 'self') onNavigate('review', 0)
+      else if (draft.coverageTarget === 'self') onNavigate('tpa', 0)
       else onNavigate('family', 0)
     } else if (stage === 'family') {
       if (active) {
@@ -364,7 +366,14 @@ export function Inquiry({
         notify('Member details saved.')
       } else if (!draft.members.length) setAddOpen(true)
       else if (nextIncomplete) setActiveMemberId(nextIncomplete.id)
-      else onNavigate('review', 0)
+      else onNavigate('tpa', 0)
+    } else if (stage === 'tpa') {
+      const errors = tpaErrors(draft)
+      if (Object.keys(errors).length) {
+        reportErrors(errors)
+        return
+      }
+      onNavigate('review', 0)
     } else {
       const cover = coverErrors(draft)
       if (Object.keys(cover).length) {
@@ -396,6 +405,10 @@ export function Inquiry({
         })
         return
       }
+      if (Object.keys(tpaErrors(draft)).length) {
+        onNavigate('tpa', 0)
+        return
+      }
       onCreate()
     }
   }
@@ -425,9 +438,11 @@ export function Inquiry({
             : 'How can we reach you?'
         : stage === 'family'
           ? 'Let’s add the people you love.'
-          : stage === 'documents'
-            ? 'Add your documents.'
-            : 'One last look.'
+          : stage === 'tpa'
+            ? 'Plans'
+            : stage === 'documents'
+              ? 'Add your documents.'
+              : 'One last look.'
   const description =
     stage === 'cover'
       ? 'A few details to point us in the right direction.'
@@ -439,9 +454,11 @@ export function Inquiry({
             : 'Keep your contact details handy for the next step.'
         : stage === 'family'
           ? 'We’ll guide you through each person, one at a time.'
-          : stage === 'documents'
-            ? 'A few supporting documents can help complete your inquiry.'
-            : 'Check the details below. You can still change anything.'
+          : stage === 'tpa'
+            ? 'Choose a plan for your cover. Your premium estimate updates as you choose.'
+            : stage === 'documents'
+              ? 'A few supporting documents can help complete your inquiry.'
+              : 'Check the details below. You can still change anything.'
   const primaryLabel =
     stage === 'family'
       ? active
@@ -450,7 +467,7 @@ export function Inquiry({
           ? 'Add person'
           : nextIncomplete
             ? 'Open next member'
-            : 'Continue to review'
+            : 'Continue to Plans'
       : stage === 'review'
         ? 'Submit'
         : stage === 'documents'
@@ -504,6 +521,40 @@ export function Inquiry({
             </div>
           )}
           <div className={`editor-surface stage-${stage}`} key={`${stage}-${group}`}>
+            {stage === 'tpa' && (
+              <div className="tpa-fields">
+                <ChoiceGroup
+                  name="tpaNetwork"
+                  label="Plans"
+                  className="tpa-network-choices plan-cards"
+                  value={draft.tpaNetwork === null ? '' : String(draft.tpaNetwork)}
+                  options={tpaNetworks.map((network) => ({
+                    value: String(network.value),
+                    label: network.label,
+                    helper: `${network.adjustment}% adjustment`,
+                    icon: (
+                      <ShieldCheck
+                        size={25}
+                        weight={
+                          network.value === 3 ? 'fill' : network.value === 2 ? 'duotone' : 'regular'
+                        }
+                      />
+                    ),
+                  }))}
+                  onChange={(value) => {
+                    const network = tpaNetworks.find((item) => String(item.value) === value)
+                    if (!network) return
+                    setDraft((current) => ({
+                      ...current,
+                      tpa: 'NextCare',
+                      tpaNetwork: network.value,
+                    }))
+                    clearError('tpaNetwork')
+                  }}
+                  error={errors.tpaNetwork}
+                />
+              </div>
+            )}
             {stage === 'cover' && (
               <>
                 <QuestionProgress current={group} total={4} />

@@ -27,7 +27,19 @@ export const art = {
 export type CoverageTarget = 'self' | 'self_and_dependents' | 'dependents_only'
 export type Gender = '' | 'male' | 'female'
 export type Relationship = 'spouse' | 'child' | 'parent' | 'other'
-export type Stage = 'cover' | 'details' | 'family' | 'documents' | 'review'
+export type Stage = 'cover' | 'details' | 'family' | 'tpa' | 'documents' | 'review'
+export type TpaNetwork = 1 | 2 | 3
+export const tpaNetworks = [
+  { value: 1, label: 'Basic Network', adjustment: 0 },
+  { value: 2, label: 'Standard Network', adjustment: 10 },
+  { value: 3, label: 'Premium Network', adjustment: 20 },
+] as const
+export function tpaErrors(draft: Draft): Errors {
+  return draft.tpa === 'NextCare' &&
+    tpaNetworks.some((network) => network.value === draft.tpaNetwork)
+    ? {}
+    : { tpaNetwork: 'Please select a plan.' }
+}
 export type SalaryBand = '' | 'above_4000' | 'below_4000' | 'pending_4000'
 export interface Person {
   fullName: string
@@ -47,6 +59,8 @@ export interface Member extends Person {
   saved: boolean
 }
 export interface Draft {
+  tpa: string
+  tpaNetwork: TpaNetwork | null
   documents: InquiryDocument[]
   documentsConfirmed: boolean
   coverageTarget: CoverageTarget
@@ -129,6 +143,7 @@ export const stageLabels: Record<Stage, string> = {
   cover: 'Cover',
   details: 'Your details',
   family: 'Family',
+  tpa: 'Plans',
   documents: 'Documents',
   review: 'Review',
 }
@@ -143,6 +158,8 @@ export function createDraft(coverageTarget: CoverageTarget = 'self'): Draft {
   return {
     coverageTarget,
     documents: [],
+    tpa: 'NextCare',
+    tpaNetwork: null,
     documentsConfirmed: false,
     visaType: '',
     nationalityCode: '',
@@ -209,8 +226,8 @@ export const isMemberComplete = (member: Member) =>
   member.saved && Object.keys(personErrors(member)).length === 0
 export function stagesFor(target: CoverageTarget): Stage[] {
   return target === 'self'
-    ? ['cover', 'details', 'review']
-    : ['cover', 'details', 'family', 'review']
+    ? ['cover', 'details', 'tpa', 'review']
+    : ['cover', 'details', 'family', 'tpa', 'review']
 }
 export function portrait(person: Partial<Person>, relationship?: Relationship) {
   if (!person.gender) return null

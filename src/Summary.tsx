@@ -19,6 +19,7 @@ import {
   relationshipLabels,
   statusOptions,
   visaOptions,
+  tpaNetworks,
 } from './health'
 import type { Draft, Stage } from './health'
 import { useLanguage } from './language-context'
@@ -69,6 +70,12 @@ export function applicantRows(draft: Draft, locale: string): [string, string][] 
     ['Mobile', formatMobile(a.mobile)],
   ]
 }
+export function tpaRows(draft: Draft): [string, string][] {
+  return [
+    ['Plan name', draft.tpa],
+    ['Network', tpaNetworks.find((network) => network.value === draft.tpaNetwork)?.label ?? ''],
+  ]
+}
 
 export function memberSummary(draft: Draft, t: (text: string) => string) {
   const groups = [
@@ -115,6 +122,12 @@ export function InquirySummaryCard({
     { label: 'Name', value: draft.applicant.fullName.trim(), stage: 'details', group: 2 },
     { label: 'Age', value: age === null ? '' : age + ' ' + t('years'), stage: 'details', group: 1 },
     { label: 'Salary', value: salaryLabel(draft.applicant.salaryBand), stage: 'details', group: 1 },
+    {
+      label: 'Plans',
+      value: tpaNetworks.find((network) => network.value === draft.tpaNetwork)?.label ?? '',
+      stage: 'tpa',
+      group: 0,
+    },
     ...(draft.coverageTarget === 'self'
       ? []
       : [{ label: 'Members', value: memberSummary(draft, t), stage: 'family' as Stage, group: 0 }]),
@@ -127,6 +140,7 @@ export function InquirySummaryCard({
     Age: Cake,
     Salary: CurrencyCircleDollar,
     Members: Users,
+    Plans: IdentificationCard,
   }
   const CoverIcon = draft.coverageTarget === 'self' ? User : Users
   return (
@@ -293,6 +307,18 @@ export function ReviewContent({
               : 'Included in cover',
           )}
         </span>
+      </section>
+      <section className="review-section">
+        <div className="section-title">
+          <h3>{t('Plans')}</h3>
+          {onEdit && (
+            <button type="button" className="edit-button" onClick={() => onEdit('tpa', 0)}>
+              <PencilSimple />
+              {t('Edit')}
+            </button>
+          )}
+        </div>
+        <DataRows rows={tpaRows(draft)} />
       </section>
       {draft.coverageTarget !== 'self' &&
         draft.members.map((member) => (

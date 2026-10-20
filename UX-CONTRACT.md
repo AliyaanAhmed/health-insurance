@@ -134,3 +134,23 @@ Spouse gender is explicitly chosen in creation using GenderGroup, validated by p
 KYC section navigation now uses full-width wrapping flex rows. Completed sections use solid primary teal and an accessible Answered label without visible completion ticks. Review uses a document icon. Active step selection retains aria-current and its outline. Completion still derives from valid currently applicable answers, not visits or saved-server state.
 
 Review edit safety: every ReviewContent edit action has type=button. On the final review, only the explicit Submit button calls the creation handler; the form's implicit submit event is ignored. Earlier steps retain native form submission for Continue/Save member. Editing cover, applicant/sponsor or a member never dispatches a create request.
+
+## TPA creation and pricing contract — October 19, 2026
+
+Source: explicit user request. Each coverage route includes a mandatory TPA step before Review. NextCare is prefilled/read-only; network has no default. CustomSelect displays labels, stores numeric choice 1/2/3, validates before Review and again before request POST. Back/edit retain the selection, while a fresh draft/coverage reset clears the network. All review Edit buttons remain non-submitting.
+
+The shared customer JSON contains tpa, tpaNetwork, original referenceSubtotal, networkAdjustmentPercent/Amount and adjusted premiums. Adjusted gross = reference subtotal × (1 + selected percentage), rounded to two decimal places; VAT is based on adjusted gross; total charge retains ceil-whole-unit rounding. Live ranges use adjusted gross as maximum and 90% as minimum. Re-selecting a network or changing a person/emirate recomputes from original reference premiums and never compounds a prior adjustment. Historical saved requests are not repriced.
+
+Dataverse aur_tpa receives provider text and aur_tpa_network receives numeric choice. Quote reads select both columns, the portal field allowlist exposes both, and saved summaries display labels. No network coverage/provider benefits beyond the supplied names and adjustment percentages are invented.
+
+TPA network input now uses native radio semantics through ChoiceGroup rather than a dropdown. Selection boxes show labels only and use the shared selected/focus treatment. Fixed NextCare is displayed as a read-only output. Network values and pricing rules remain unchanged.
+
+Saved request summaries show Network adjustment alongside the TPA/network: Basic 0%, Standard +10%, Premium +20%, formatted in the active locale. Prefer the saved customer JSON adjustment percentage; use the selected network mapping only for older records without that snapshot. Missing selections remain unavailable rather than showing a fabricated 0%. No repricing occurs in the view.
+
+Request summary displays the existing translated DOH/KYC quote note immediately below the cover/premium header. Hide it only when Dataverse statuscode is Awaiting Review (751820009) or Quote Sent to Customer (751820016), matching the existing quote status mapping in the companion motor app. No local timer or inferred completion suppresses the note; it follows the status returned by the portal.
+
+Quote-note placement correction: the status-aware DOH/KYC note belongs inside the right-hand pricing header, spanning below Network adjustment, Gross premium and Premium to be charged. It no longer occupies a separate row outside the header. The two status exclusions remain unchanged.
+
+Plans supersedes customer-facing TPA labels in creation/sidebar/review. Numeric network choice and fixed NextCare backend fields remain unchanged. The JSON premium.networkAdjustmentAmount contains the exact currency-cent added amount, not the adjusted gross or VAT; changing a plan recomputes from referenceSubtotal without compounding. Saved view shows the persisted amount or an unavailable dash for older snapshots.
+
+Request progress mapping: 751820006/751820007/751820020 → Inquiry Created; 751820017 → ICP Verification; 751820018 → DOH Review; 751820019 → KYC Info Required; 751820001/751820008 → AI Processing; 751820009/751820016 → Awaiting Review. All prior stages receive reached styling when a later stage is current, as explicitly requested; this does not independently certify those checks. The current stage is identified separately in text and aria-current. The last stage is not presented as policy issuance or purchase completion. Unknown statuses show Status unavailable without inventing a position.

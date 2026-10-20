@@ -1,5 +1,5 @@
 ﻿import type { Inquiry } from './health'
-import { createDraft } from './health'
+import { createDraft, tpaNetworks } from './health'
 import { emirateFromRateName, parseCustomerData } from './healthPricing'
 import type { CustomerData, HealthCatalog, HealthPlan } from './healthPricing'
 import { appendKycEmail, buildKycSubmission, coveredPeople, isKycSubmission } from './kycQuestions'
@@ -23,6 +23,8 @@ type RateRow = {
 }
 type ContactRow = { contactid: string; fullname?: string; emailaddress1?: string }
 type QuoteRow = {
+  aur_tpa?: string
+  aur_tpa_network?: number
   '@odata.etag'?: string
   aur_email_data?: string
   aur_base_premium?: number
@@ -260,7 +262,14 @@ function quoteRecord(row: QuoteRow): Inquiry {
     dataverseStatus: row.statuscode,
     name: row.aur_name,
     createdAt: row.createdon ?? '',
-    draft: parsed?.draft ?? createDraft(),
+    draft: {
+      ...(parsed?.draft ?? createDraft()),
+      tpa: row.aur_tpa ?? parsed?.draft.tpa ?? '',
+      tpaNetwork:
+        tpaNetworks.find((network) => network.value === row.aur_tpa_network)?.value ??
+        parsed?.draft.tpaNetwork ??
+        null,
+    },
     customerData: parsed?.customerData,
     unreadable: !parsed,
     grossPremium: row.aur_gross_premium,
@@ -269,7 +278,7 @@ function quoteRecord(row: QuoteRow): Inquiry {
   }
 }
 const quoteSelect =
-  'aur_quotesid,aur_name,aur_customer_data,aur_email_data,aur_base_premium,aur_gross_premium,aur_total_amount_charge,statuscode,createdon,_aur_contact_value'
+  'aur_quotesid,aur_name,aur_customer_data,aur_email_data,aur_base_premium,aur_gross_premium,aur_total_amount_charge,aur_tpa,aur_tpa_network,statuscode,createdon,_aur_contact_value'
 export async function loadHealthRequests(productId: string): Promise<Inquiry[]> {
   const rows = await all<QuoteRow>(
     '/_api/aur_quoteses?$select=' +
@@ -298,6 +307,8 @@ export async function submitHealthRequest(
   if (
     !data.product ||
     !data.plan ||
+    data.tpa !== 'NextCare' ||
+    !tpaNetworks.some((network) => network.value === data.tpaNetwork) ||
     !data.premium.complete ||
     data.premium.grossPremium === null ||
     data.premium.totalAmountCharge === null
@@ -405,6 +416,8 @@ export async function submitHealthRequest(
       'aur_product@odata.bind': '/aur_productses(' + guid(data.product.id) + ')',
       'aur_plan@odata.bind': '/aur_plans(' + guid(data.plan.id) + ')',
       aur_gross_premium: data.premium.grossPremium,
+      aur_tpa: data.tpa,
+      aur_tpa_network: data.tpaNetwork,
       aur_base_premium: data.product.premium,
       statuscode: INQUIRY_CREATED,
       aur_total_amount_charge: data.premium.totalAmountCharge,

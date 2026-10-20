@@ -1,5 +1,6 @@
 ﻿import { ageOf, createDraft, emirates } from './health'
 import type { Draft, Person } from './health'
+import { tpaErrors, tpaNetworks } from './health'
 import type { KycSubmission } from './kycQuestions'
 
 export interface HealthPlan {
@@ -37,6 +38,8 @@ export interface PersonPremium {
   premiumStatus: PremiumStatus
 }
 export interface CustomerData {
+  tpa?: string
+  tpaNetwork?: Draft['tpaNetwork']
   kyc?: KycSubmission
   schemaVersion: 1
   currency: 'AED'
@@ -51,6 +54,9 @@ export interface CustomerData {
   members: (Draft['members'][number] & PersonPremium)[]
   premium: {
     basePremium: number | null
+    referenceSubtotal?: number
+    networkAdjustmentPercent?: number
+    networkAdjustmentAmount?: number
     pricedPeople: number
     totalPeople: number
     partialGrossPremium: number
@@ -140,18 +146,24 @@ export function buildCustomerData(
   const insured = [applicant, ...members].filter((person) => person.insured)
   const priced = insured.filter((person) => person.premiumStatus === 'priced')
   const subtotalCents = priced.reduce((sum, person) => sum + cents(person.referencePremium!), 0)
+  const networkAdjustmentPercent =
+    tpaNetworks.find((network) => network.value === draft.tpaNetwork)?.adjustment ?? 0
+  const grossCents = Math.round((subtotalCents * (100 + networkAdjustmentPercent)) / 100)
   const complete =
     insured.length > 0 &&
     insured.length === priced.length &&
     members.every((member) => member.saved) &&
-    Boolean(plan)
-  const grossPremium = priced.length ? subtotalCents / 100 : null
+    Boolean(plan) &&
+    Object.keys(tpaErrors(draft)).length === 0
+  const grossPremium = priced.length ? grossCents / 100 : null
   // Round the final charge only: rounding VAT to cents first can incorrectly
   // turn a total such as 100.002 into 100 instead of the required 101.
-  const vatAmount = complete ? (subtotalCents * plan!.vat) / 10000 : null
-  const exactTotalAmount = complete ? (subtotalCents * (100 + plan!.vat)) / 10000 : null
+  const vatAmount = complete ? (grossCents * plan!.vat) / 10000 : null
+  const exactTotalAmount = complete ? (grossCents * (100 + plan!.vat)) / 10000 : null
   return {
     schemaVersion: 1,
+    tpa: draft.tpa,
+    tpaNetwork: draft.tpaNetwork,
     currency: PREMIUM_CURRENCY,
     coverageTarget: draft.coverageTarget,
     visaType: draft.visaType,
@@ -164,9 +176,12 @@ export function buildCustomerData(
     members,
     premium: {
       basePremium: catalog?.product.premium ?? null,
+      referenceSubtotal: subtotalCents / 100,
+      networkAdjustmentPercent,
+      networkAdjustmentAmount: (grossCents - subtotalCents) / 100,
       pricedPeople: priced.length,
       totalPeople: insured.length,
-      partialGrossPremium: subtotalCents / 100,
+      partialGrossPremium: grossCents / 100,
       grossPremium,
       vatPercent: plan?.vat ?? null,
       vatAmount,
@@ -245,6 +260,10 @@ export function parseCustomerData(
       customerData: { ...d, currency: PREMIUM_CURRENCY },
       draft: {
         ...createDraft(d.coverageTarget),
+        tpa: typeof d.tpa === 'string' ? d.tpa : '',
+        tpaNetwork: tpaNetworks.some((network) => network.value === d.tpaNetwork)
+          ? d.tpaNetwork!
+          : null,
         visaType: d.visaType,
         nationalityCode: d.nationalityCode,
         visaEmirate: d.visaEmirate,

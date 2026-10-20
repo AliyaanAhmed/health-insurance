@@ -1,13 +1,26 @@
-import { IdentificationCard, ShieldCheck, User, Users } from '@phosphor-icons/react'
+import { IdentificationCard, Info, ShieldCheck, User, Users } from '@phosphor-icons/react'
 import type { Inquiry } from './health'
-import { ageOf, coverageOptions, relationshipLabels } from './health'
-import { applicantRows, coverRows } from './Summary'
+import { ageOf, coverageOptions, relationshipLabels, tpaNetworks } from './health'
+import { applicantRows, coverRows, tpaRows } from './Summary'
 import { Avatar, Modal } from './ui'
 import { useLanguage } from './language-context'
+import { RequestProgress } from './RequestProgress'
 
 export function InquiryView({ record, onClose }: { record?: Inquiry; onClose: () => void }) {
   const { t, locale } = useLanguage()
   const draft = record?.draft
+  const showQuoteNote = ![751820009, 751820016].includes(Number(record?.dataverseStatus))
+  const network = tpaNetworks.find((item) => item.value === draft?.tpaNetwork)
+  const networkAdjustment =
+    record?.customerData?.premium.networkAdjustmentPercent ?? network?.adjustment
+  const adjustmentLabel =
+    networkAdjustment === undefined
+      ? ''
+      : new Intl.NumberFormat(locale === 'ar' ? 'ar-AE' : 'en-AE', {
+          style: 'percent',
+          maximumFractionDigits: 0,
+          signDisplay: 'exceptZero',
+        }).format(networkAdjustment / 100)
   const money = (amount: number | null | undefined) =>
     amount == null
       ? '\u2014'
@@ -67,6 +80,10 @@ export function InquiryView({ record, onClose }: { record?: Inquiry; onClose: ()
                 </div>
               </div>
               <div className="request-summary-prices">
+                <div className="request-summary-network">
+                  <span>{t('Network adjustment')}</span>
+                  <strong>{adjustmentLabel || '\u2014'}</strong>
+                </div>
                 <div className="request-summary-gross">
                   <span>{t('Gross premium')}</span>
                   <strong>
@@ -81,15 +98,34 @@ export function InquiryView({ record, onClose }: { record?: Inquiry; onClose: ()
                     )}
                   </strong>
                 </div>
+                {showQuoteNote && (
+                  <p className="request-summary-disclaimer">
+                    <Info size={15} aria-hidden="true" />
+                    <span>
+                      {t(
+                        'The final quote will be dependent on DOH checks and KYC for each member.',
+                      )}
+                    </span>
+                  </p>
+                )}
               </div>
             </div>
+            <RequestProgress status={record.dataverseStatus} />
             <div className="request-summary-sections">
               <section className="request-summary-section">
                 <h3>
                   <IdentificationCard size={17} />
                   {t('Cover details')}
                 </h3>
-                {fields(coverRows(draft, locale))}
+                {fields([
+                  ...coverRows(draft, locale),
+                  ...tpaRows(draft),
+                  ['Network adjustment', adjustmentLabel],
+                  [
+                    'Plan adjustment amount',
+                    money(record.customerData?.premium.networkAdjustmentAmount),
+                  ],
+                ])}
               </section>
               <section className="request-summary-section">
                 <h3>

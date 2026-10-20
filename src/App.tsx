@@ -8,6 +8,7 @@ import {
   applicantErrors,
   stageLabels,
   stagesFor,
+  tpaErrors,
 } from './health'
 import type { CoverageTarget, Draft, Inquiry as InquiryRecord, Stage } from './health'
 import { LanguageProvider } from './i18n'
@@ -69,9 +70,9 @@ function HealthApp() {
   const integration = useHealthCatalog(draft, inquiryPage ? 'create' : 'idle')
   const parts = path.split('/')
   const rawStage = parts[2] as Stage
-  const stage: Stage = ['cover', 'details', 'family', 'review'].includes(rawStage)
+  const stage: Stage = ['cover', 'details', 'family', 'tpa', 'review'].includes(rawStage)
     ? rawStage === 'family' && draft.coverageTarget === 'self'
-      ? 'review'
+      ? 'tpa'
       : rawStage
     : 'cover'
   const group = Math.min(
@@ -192,6 +193,7 @@ function HealthApp() {
     if (
       Object.keys(coverErrors(draft)).length ||
       Object.keys(applicantErrors(draft.applicant)).length ||
+      Object.keys(tpaErrors(draft)).length ||
       (draft.coverageTarget !== 'self' &&
         (!draft.members.length || !draft.members.every(isMemberComplete)))
     ) {
