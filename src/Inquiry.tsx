@@ -11,6 +11,9 @@ import {
   MapPin,
   Plus,
   ShieldCheck,
+  Shield,
+  ShieldStar,
+  StackSimple,
   Trash,
   User,
   Users,
@@ -527,19 +530,26 @@ export function Inquiry({
                   name="tpaNetwork"
                   label="Plans"
                   className="tpa-network-choices plan-cards"
+                  selectedLabel="Selected"
                   value={draft.tpaNetwork === null ? '' : String(draft.tpaNetwork)}
                   options={tpaNetworks.map((network) => ({
                     value: String(network.value),
                     label: network.label,
                     helper: `${network.adjustment}% adjustment`,
-                    icon: (
-                      <ShieldCheck
-                        size={25}
-                        weight={
-                          network.value === 3 ? 'fill' : network.value === 2 ? 'duotone' : 'regular'
-                        }
-                      />
-                    ),
+                    description:
+                      network.value === 1
+                        ? 'A simple starting point for your health cover.'
+                        : network.value === 2
+                          ? 'A balanced network choice for your health cover.'
+                          : 'A premium network choice for your health cover.',
+                    icon:
+                      network.value === 1 ? (
+                        <Shield size={48} weight="regular" aria-hidden="true" />
+                      ) : network.value === 2 ? (
+                        <StackSimple size={48} weight="regular" aria-hidden="true" />
+                      ) : (
+                        <ShieldStar size={48} weight="regular" aria-hidden="true" />
+                      ),
                   }))}
                   onChange={(value) => {
                     const network = tpaNetworks.find((item) => String(item.value) === value)

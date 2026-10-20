@@ -1,4 +1,8 @@
 export const followUpArabic: Record<string, string> = {
+  Selected: 'محدد',
+  'A simple starting point for your health cover.': 'بداية بسيطة لتغطيتك الصحية.',
+  'A balanced network choice for your health cover.': 'خيار شبكة متوازن لتغطيتك الصحية.',
+  'A premium network choice for your health cover.': 'خيار شبكة مميز لتغطيتك الصحية.',
   'Plan name': 'اسم الخطة',
   Network: 'الشبكة',
   '0% adjustment': 'تعديل بنسبة ٠٪',

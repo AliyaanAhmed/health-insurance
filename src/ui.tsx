@@ -163,6 +163,7 @@ export interface ChoiceOption {
   value: string
   label: string
   helper?: string
+  description?: string
   icon?: ReactNode
   image?: string
 }
@@ -175,6 +176,7 @@ export function ChoiceGroup({
   error,
   className = '',
   compact = false,
+  selectedLabel,
 }: {
   name: string
   label: string
@@ -184,6 +186,7 @@ export function ChoiceGroup({
   error?: string
   className?: string
   compact?: boolean
+  selectedLabel?: string
 }) {
   const { t } = useLanguage()
   return (
@@ -207,6 +210,9 @@ export function ChoiceGroup({
               checked={value === option.value}
               onChange={() => onChange(option.value)}
             />
+            {selectedLabel && value === option.value && (
+              <span className="choice-selected-label">{t(selectedLabel)}</span>
+            )}
             {option.image && (
               <span className="option-portrait">
                 <img src={option.image} alt="" />
@@ -215,7 +221,10 @@ export function ChoiceGroup({
             {option.icon && <span className="option-icon">{option.icon}</span>}
             <span className="option-copy">
               <strong>{t(option.label)}</strong>
-              {option.helper && <span>{t(option.helper)}</span>}
+              {option.description && (
+                <span className="option-description">{t(option.description)}</span>
+              )}
+              {option.helper && <span className="option-helper">{t(option.helper)}</span>}
             </span>
           </label>
         ))}
